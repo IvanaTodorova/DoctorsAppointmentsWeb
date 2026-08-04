@@ -1,0 +1,34 @@
+﻿@model List<Appointments>
+
+@{
+    ViewData["Title"] = "Листа на закажани термини";
+}
+   <h1>@ViewData["Title"]</h1>
+
+   <table class="table table-striped table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Ид</th>
+                <th scope="col">Доктор</th>
+                <th scope="col">Пациент</th>
+                <th scope="col">Датум на термин</th>
+                <th scope="col">Време на термин</th>
+                <th scope="col">Статус</th>
+                <th scope="col">Забелешки</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var rez in Model)
+            {
+            <tr>
+                <td>@rez.id</td>
+                <td>@rez.doctor_first_name @rez.doctor_last_name</td>
+                <td>@rez.patient_first_name @rez.patient_last_name</td>
+                <td>@rez.appointmentdate.ToString("dd/MM/yyyy")</td>
+                <td>@rez.appointmenttime.Substring(0, 5)</td>
+                <td>@rez.status</td>
+                <td>@rez.notes</td>
+            </tr>
+        }
+        </tbody>
+</table>

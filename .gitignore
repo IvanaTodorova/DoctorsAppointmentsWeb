@@ -427,3 +427,8 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+
+PraskaWebApp/bin
+PraksaWebApp/obj
+PraksaWebApp/.vs

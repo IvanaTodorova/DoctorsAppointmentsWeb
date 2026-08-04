@@ -1,0 +1,23 @@
+﻿@model List<Tipovi_na_specijalizacija>
+@{
+    ViewData["Title"] = "Типови на Специјализација";
+}
+<h1>@ViewData["Title"]</h1>
+<table class="table table-striped table-bordered table-hover">
+    <thead class=""table-dark">
+        <tr>
+            <th scope="col">Ид</th>
+            <th scope="col">Типови на специјализација</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var spec in Model)
+        {
+            <tr>
+                <td>@spec.id</td>
+                <td>@spec.naziv</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
