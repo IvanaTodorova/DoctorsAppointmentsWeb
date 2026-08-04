@@ -73,17 +73,11 @@
                     </button>
 
                     <!-- Избриши -->
-                    <form asp-action="Delete"
-                          method="post"
-                          style="display:inline;">
-
-                        <input type="hidden"
-                               name="id"
-                               value="@status.id" />
+                    <form asp-controller="Status" asp-action="Delete" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@status.id" />
 
                         <button type="submit"
-                                class="btn btn-danger btn-sm"
-                                onclick="return confirm('Дали сте сигурни дека сакате да го избришете статусот?')">
+                                class="btn btn-danger btn-sm">
                             <i class="bi bi-trash"></i>
                         </button>
                     </form>

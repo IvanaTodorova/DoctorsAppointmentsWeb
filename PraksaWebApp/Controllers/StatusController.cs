@@ -47,5 +47,14 @@ namespace PraksaWebApp.Controllers
 
             return RedirectToAction("Index");
         }
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _httpClient.DeleteAsync(
+                $"https://localhost:7081/api/Status?id={id}"
+            );
+
+            return RedirectToAction("Index");
+        }
     }
 }
