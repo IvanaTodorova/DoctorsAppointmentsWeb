@@ -6,6 +6,39 @@
 
 <h1>@ViewData["Title"]</h1>
 
+<script>
+    
+     function openAddModal() {
+
+            document.getElementById("statusId").value = "";
+        document.getElementById("statusName").value = "";
+
+        document.getElementById("statusModalLabel").innerText =
+        "Додади статус";
+
+        var modal = new bootstrap.Modal(
+        document.getElementById("statusModal")
+        );
+
+        modal.show();
+    }
+
+
+        function editStatus(id, statusName) {
+
+            document.getElementById("statusId").value = id;
+        document.getElementById("statusName").value = statusName;
+
+        document.getElementById("statusModalLabel").innerText =
+        "Измени статус";
+
+        var modal = new bootstrap.Modal(
+        document.getElementById("statusModal")
+        );
+
+        modal.show();
+    }
+</script>
 <!-- Копче за додавање -->
 
 <div class="text-end mb-3">
@@ -133,37 +166,3 @@
 
 </div>
 
-<script>
-    // Отвора празен modal за додавање
-    function openAddModal() {
-
-        document.getElementById("statusId").value = "";
-        document.getElementById("statusName").value = "";
-
-        document.getElementById("statusModalLabel").innerText =
-            "Додади статус";
-
-        var modal = new bootstrap.Modal(
-            document.getElementById("statusModal")
-        );
-
-        modal.show();
-    }
-
-
-    // Отвора modal со пополнети податоци за измена
-    function editStatus(id, statusName) {
-
-        document.getElementById("statusId").value = id;
-        document.getElementById("statusName").value = statusName;
-
-        document.getElementById("statusModalLabel").innerText =
-            "Измени статус";
-
-        var modal = new bootstrap.Modal(
-            document.getElementById("statusModal")
-        );
-
-        modal.show();
-    }
-</script>
