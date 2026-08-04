@@ -20,5 +20,31 @@ namespace PraksaWebApp.Controllers
 
             return View(status);
         }
+        [HttpPost]
+        public async Task<IActionResult> Save(Status status)
+        {
+            if (status.id == 0)
+            { // POST - додавање нов статус
+                await _httpClient.PostAsJsonAsync(
+                    "https://localhost:7081/api/Status",
+                    status
+                    );
+            } else
+            { // PUT - изменување постоечки статус
+                await _httpClient.PutAsJsonAsync(
+                    $"https://localhost:7081/api/Status?id={status.id}",
+                    status
+                    );
+            }
+            return RedirectToAction("Index"); 
+        }
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        { 
+            await _httpClient.DeleteAsync(
+                $"https://localhost:7081/api/Status?id={id}"
+                );
+            return RedirectToAction("Index"); 
+        }
     }
 }
