@@ -1,4 +1,6 @@
-﻿namespace PraksaWebApp.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace PraksaWebApp.Models
 {
     public class Patient
     {
