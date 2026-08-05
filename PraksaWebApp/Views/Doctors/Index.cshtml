@@ -1,10 +1,219 @@
-﻿@model List<Doctor>
+﻿@model DoctorViewModel
 
 @{
     ViewData["Title"] = "Листа од доктори";
 }
+<script>
+    function editDoctor(id, firstName, lastName, phone, specijalnostId, isActive) {
+
+        document.querySelector('input[name="Id"]').value = id;
+
+        document.querySelector('input[name="First_name"]').value = firstName;
+
+        document.querySelector('input[name="Last_name"]').value = lastName;
+
+        document.querySelector('input[name="Phone"]').value = phone;
+
+        document.querySelector('select[name="Specijalnost_id"]').value = specijalnostId;
+
+
+        if (isActive == "True") {
+            document.querySelector('input[value="true"]').checked = true;
+        }
+        else {
+            document.querySelector('input[value="false"]').checked = true;
+        }
+
+
+        document.querySelector(".modal-title").innerText = "Измени доктор";
+
+
+        var modal = new bootstrap.Modal(
+            document.getElementById("addModal")
+        );
+
+        modal.show();
+    }
+</script>
 <h1>@ViewData["Title"]</h1>
 
+<div class="text-end mb-3">
+
+    <button class="btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#addModal">
+
+        Додади
+
+    </button>
+
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="addModal" tabindex="-1">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Додади доктор
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+
+            <form asp-action="Save" method="post">
+
+                <div class="modal-body">
+
+
+                    <input type="hidden"
+                           name="Id"
+                           value="0" />
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Име
+                        </label>
+
+                        <input type="text"
+                               name="First_name"
+                               class="form-control" />
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Презиме
+                        </label>
+
+                        <input type="text"
+                               name="Last_name"
+                               class="form-control" />
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Телефон
+                        </label>
+
+                        <input type="text"
+                               name="Phone"
+                               class="form-control" />
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Специјалност
+                        </label>
+
+
+                        <select name="Specijalnost_id"
+                                class="form-control">
+
+
+                            @foreach (var spec in Model.Specijalizacija)
+                            {
+                                <option value="@spec.id">
+                                    @spec.naziv
+                                </option>
+                            }
+
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Дали е активен
+                        </label>
+
+
+                        <div>
+
+                            <input type="radio"
+                                   name="IsActive"
+                                   value="true"
+                                   checked />
+
+                            <label>
+                                Да
+                            </label>
+
+                        </div>
+
+
+                        <div>
+
+                            <input type="radio"
+                                   name="IsActive"
+                                   value="false" />
+
+                            <label>
+                                Не
+                            </label>
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="modal-footer">
+
+
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        Зачувај
+
+                    </button>
+
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+
+                        Откажи
+
+                    </button>
+
+
+                </div>
+
+
+            </form>
+
+
+        </div>
+
+    </div>
+
+</div>
 
 <table class="table table-striped table-bordered table-hover">
     <thead class="table-dark">
@@ -16,10 +225,11 @@
             <th scope="col">Специјалност</th>
             <th scope="col">Специјалност_ид</th>
             <th scope="col">Дали е активен</th>
+            <th scope="col">Акции</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var doktor in Model)
+        @foreach (var doktor in Model.Doctors)
         {
             <tr>
                 <td>@doktor.Id</td>
@@ -29,6 +239,43 @@
                 <td>@doktor.Specijalnost</td>
                 <td>@doktor.Specijalnost_id</td>
                 <td>@doktor.IsActiveString</td>
+                <td>
+
+                    <button class="btn btn-warning btn-sm"
+                            onclick="editDoctor(
+                        @doktor.Id,
+                        '@doktor.First_name',
+                        '@doktor.Last_name',
+                        '@doktor.Phone',
+                        @doktor.Specijalnost_id,
+                        '@doktor.IsActive'
+                        )">
+
+                        <i class="bi bi-pencil"></i>
+
+                    </button>
+
+
+                    <form asp-controller="Doctors"
+                          asp-action="Delete"
+                          method="post"
+                          style="display:inline;">
+
+                        <input type="hidden"
+                               name="id"
+                               value="@doktor.Id" />
+
+                        <button type="submit"
+                                class="btn btn-danger btn-sm"
+                                onclick="return confirm('Дали сте сигурни?')">
+
+                            <i class="bi bi-trash"></i>
+
+                        </button>
+
+                    </form>
+
+                </td>
             </tr>
         }
     </tbody>

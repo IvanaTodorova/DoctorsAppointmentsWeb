@@ -15,10 +15,54 @@ namespace PraksaWebApp.Controllers
 
         public async Task<IActionResult> Index()
         {
-            List<Doctor>? termini = await _httpClient.GetFromJsonAsync<List<Doctor>>(
-                "https://localhost:7081/api/Doctors");
+            List<Doctor>? doktori = await _httpClient.GetFromJsonAsync<List<Doctor>>(
+                "https://localhost:7081/api/Doctors"
+            );
 
-            return View(termini);
+            List<Tipovi_na_specijalizacija>? specijalizacii = await _httpClient.GetFromJsonAsync<List<Tipovi_na_specijalizacija>>(
+                "https://localhost:7081/api/Tipovi_Na_Specijalizacija"
+            );
+
+
+            DoctorViewModel model = new DoctorViewModel
+            {
+                Doctors = doktori,
+                Specijalizacija = specijalizacii
+            };
+
+
+            return View(model);
+        }
+        [HttpPost]
+        public async Task<IActionResult> Save(Doctor doctor)
+        {
+            if (doctor.Id == null || doctor.Id == 0)
+            {
+                await _httpClient.PostAsJsonAsync(
+                    "https://localhost:7081/api/Doctors",
+                    doctor
+                );
+            }
+            else
+            {
+                await _httpClient.PutAsJsonAsync(
+                    $"https://localhost:7081/api/Doctors?id={doctor.Id}",
+                    doctor
+                );
+            }
+
+            return RedirectToAction("Index");
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _httpClient.DeleteAsync(
+                $"https://localhost:7081/api/Doctors?id={id}"
+            );
+
+            return RedirectToAction("Index");
         }
     }
 }
