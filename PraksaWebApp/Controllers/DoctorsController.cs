@@ -36,6 +36,11 @@ namespace PraksaWebApp.Controllers
         [HttpPost]
         public async Task<IActionResult> Save(Doctor doctor)
         {
+            if (doctor.Specijalnost_id == null || doctor.Specijalnost_id == 0)
+            {
+                return RedirectToAction("Index");
+            }
+
             if (doctor.Id == null || doctor.Id == 0)
             {
                 await _httpClient.PostAsJsonAsync(

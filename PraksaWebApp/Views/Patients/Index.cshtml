@@ -3,9 +3,7 @@
 @{
     ViewData["Title"] = "Листа од пациенти";
 }
-
 <h1>@ViewData["Title"]</h1>
-
 <script>
     function editPatient(id, firstName, lastName, embg, phone, email) {
 
@@ -15,6 +13,8 @@
         document.getElementById("patientEmbg").value = embg;
         document.getElementById("patientPhone").value = phone;
         document.getElementById("patientEmail").value = email;
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        document.querySelectorAll('.text-danger').forEach(el => el.style.display = 'none');
 
         document.getElementById("addModalLabel").innerText = "Измени пациент";
 
@@ -30,17 +30,14 @@
         document.getElementById("patientId").value = 0;
         document.getElementById("patientFirstName").value = "";
         document.getElementById("patientLastName").value = "";
-        document.getElementById("patientEmbg").value = null;
+        document.getElementById("patientEmbg").value = "";
         document.getElementById("patientPhone").value = "";
         document.getElementById("patientEmail").value = "";
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        document.querySelectorAll('.text-danger').forEach(el => el.style.display = 'none');
 
         document.getElementById("addModalLabel").innerText = "Додади пациент";
-    }
-</script>
-
-
-<!-- Копче за додавање -->
-<div class="text-end mb-3">
+    }</script><!-- Копче за додавање --><div class="text-end mb-3">
 
     <button class="btn btn-primary"
             onclick="addPatient()"
@@ -50,155 +47,179 @@
         Додади
 
     </button>
+</div><!-- Bootstrap Modal --><div class="modal fade"
+                               id="addModal"
+                               tabindex="-1"
+                               aria-labelledby="addModalLabel"
+                               aria-hidden="true">
 
-</div>
+<div class="modal-dialog">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h5 class="modal-title"
+                id="addModalLabel">
+
+                Додади пациент
+
+            </h5>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+            </button>
+
+        </div>
 
 
-<!-- Bootstrap Modal -->
-<div class="modal fade"
-     id="addModal"
-     tabindex="-1"
-     aria-labelledby="addModalLabel"
-     aria-hidden="true">
+        <form asp-action="Save"
+              method="post">
 
-    <div class="modal-dialog">
+            <!-- Скриен ID -->
+            <input type="hidden"
+                   id="patientId"
+                   name="id" />
 
-        <div class="modal-content">
 
-            <div class="modal-header">
+            <div class="modal-body">
 
-                <h5 class="modal-title"
-                    id="addModalLabel">
+                <div class="mb-3">
+                    <label class="form-label">
+                        Име
+                    </label>
 
-                    Додади пациент
+                    <input type="text"
+                           id="patientFirstName"
+                           name="first_name"
+                           class="form-control"
+                           required
+                           oninvalid="event.preventDefault();
+                    this.classList.add('is-invalid');
+                    document.getElementById('firstNameError').style.display='block';"
+                           oninput="this.classList.remove('is-invalid');
+                    document.getElementById('firstNameError').style.display='none';" />
 
-                </h5>
 
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal">
-                </button>
+                    <span id="firstNameError" class="text-danger" style="display:none;">
+                        Името е задолжително
+                    </span>
+                </div>
+
+
+                <div class="mb-3">
+                    <label class="form-label">
+                        Презиме
+                    </label>
+
+                    <input type="text"
+                           id="patientLastName"
+                           name="last_name"
+                           class="form-control"
+                           required
+                           oninvalid="event.preventDefault();
+                    this.classList.add('is-invalid');
+                    document.getElementById('lastNameError').style.display='block';"
+                           oninput="this.classList.remove('is-invalid');
+                    document.getElementById('lastNameError').style.display='none';" />
+
+                    <span id="lastNameError" class="text-danger" style="display:none;">
+                        Презимето е задолжително
+                    </span>
+
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">
+                        ЕМБГ
+                    </label>
+
+                    <input type="text"
+                           id="patientEmbg"
+                           name="embg"
+                           class="form-control"
+                           pattern="[0-9]{13}"
+                           required
+                           oninvalid="event.preventDefault();
+                    this.classList.add('is-invalid');
+                    var err = document.getElementById('embgError');
+                    err.innerText = this.value.trim() === '' ? 'Полето е задолжително' : 'ЕМБГ мора да има точно 13 цифри';
+                    err.style.display = 'block';"
+                           oninput="this.classList.remove('is-invalid');
+                    document.getElementById('embgError').style.display = 'none';" />
+
+                    <span id="embgError" class="text-danger" style="display:none;">
+                        Полето е задолжително
+                    </span>
+
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">
+                        Телефон
+                    </label>
+
+                    <input type="text"
+                           id="patientPhone"
+                           name="phone"
+                           class="form-control"
+                           required
+                           oninvalid="event.preventDefault();
+                    this.classList.add('is-invalid');
+                    document.getElementById('phoneError').style.display='block';"
+                           oninput="this.classList.remove('is-invalid');
+                    document.getElementById('phoneError').style.display='none';" />
+
+                    <span id="phoneError" class="text-danger" style="display:none;">
+                        Телефонскиот број е задолжителен
+                    </span>
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Емаил
+                    </label>
+
+                    <input type="email"
+                           id="patientEmail"
+                           name="email"
+                           class="form-control" />
+
+                </div>
 
             </div>
 
 
-            <form asp-action="Save"
-                  method="post">
+            <div class="modal-footer">
 
-                <!-- Скриен ID -->
-                <input type="hidden"
-                       id="patientId"
-                       name="id" />
+                <button type="submit"
+                        class="btn btn-primary">
 
+                    Зачувај
 
-                <div class="modal-body">
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Име
-                        </label>
-
-                        <input type="text"
-                               id="patientFirstName"
-                               name="first_name"
-                               class="form-control" />
-
-                    </div>
+                </button>
 
 
-                    <div class="mb-3">
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
 
-                        <label class="form-label">
-                            Презиме
-                        </label>
+                    Откажи
 
-                        <input type="text"
-                               id="patientLastName"
-                               name="last_name"
-                               class="form-control" />
+                </button>
 
-                    </div>
+            </div>
 
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            ЕМБГ
-                        </label>
-
-                        <input type="text"
-                               id="patientEmbg"
-                               name="embg"
-                               class="form-control"                          
-                               pattern="[0-9]{13}"
-                               title="ЕМБГ мора да има точно 13 цифри"
-                               required 
-                               />
-
-                    </div>
-
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Телефон
-                        </label>
-
-                        <input type="text"
-                               id="patientPhone"
-                               name="phone"
-                               class="form-control" />
-
-                    </div>
-
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Емаил
-                        </label>
-
-                        <input type="email"
-                               id="patientEmail"
-                               name="email"
-                               class="form-control" />
-
-                    </div>
-
-                </div>
-
-
-                <div class="modal-footer">
-
-                    <button type="submit"
-                            class="btn btn-primary">
-
-                        Зачувај
-
-                    </button>
-
-
-                    <button type="button"
-                            class="btn btn-secondary"
-                            data-bs-dismiss="modal">
-
-                        Откажи
-
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
+        </form>
 
     </div>
 
 </div>
-
-
-<!-- Табела -->
+</div><!-- Табела -->
 <table class="table table-striped table-bordered table-hover">
 
     <thead class="table-info">

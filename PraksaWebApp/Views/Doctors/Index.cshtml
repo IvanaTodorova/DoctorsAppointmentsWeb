@@ -4,7 +4,24 @@
     ViewData["Title"] = "Листа од доктори";
 }
 <script>
-    function editDoctor(id, firstName, lastName, phone, specijalnostId, isActive) {
+        function resetDoctorForm() {
+
+            document.querySelector('input[name="Id"]').value = 0;
+
+        document.querySelector('input[name="First_name"]').value = "";
+
+        document.querySelector('input[name="Last_name"]').value = "";
+
+        document.querySelector('input[name="Phone"]').value = "";
+
+        document.querySelector('select[name="Specijalnost_id"]').value = "";
+
+        document.querySelector('input[value="true"]').checked = true;
+
+        document.querySelector(".modal-title").innerText = "Додади доктор";
+        }
+
+        function editDoctor(id, firstName, lastName, phone, specijalnostId, isActive) {
 
         document.querySelector('input[name="Id"]').value = id;
 
@@ -40,6 +57,7 @@
 <div class="text-end mb-3">
 
     <button class="btn btn-primary"
+            onclick="resetDoctorForm()"
             data-bs-toggle="modal"
             data-bs-target="#addModal">
 
@@ -88,10 +106,21 @@
 
                         <input type="text"
                                name="First_name"
-                               class="form-control" />
+                               class="form-control"
+                               required
+                               oninvalid="event.preventDefault();
+                        this.classList.add('is-invalid');
+                        document.getElementById('firstNameError').style.display='block';"
+                               oninput="this.classList.remove('is-invalid');
+                        document.getElementById('firstNameError').style.display='none';" /> <!-- Додадено /> овде -->
+
+                        <span id="firstNameError"
+                              class="text-danger"
+                              style="display:none;">
+                            Полето е задолжително
+                        </span>
 
                     </div>
-
 
                     <div class="mb-3">
 
@@ -101,8 +130,19 @@
 
                         <input type="text"
                                name="Last_name"
-                               class="form-control" />
+                               class="form-control"
+                               required
+                        oninvalid="event.preventDefault();
+                                   this.classList.add('is-invalid');
+                                    document.getElementById('lastNameError').style.display='block';"
+                        oninput="this.classList.remove('is-invalid');
+                                document.getElementById('lastNameError').style.display='none';" />
 
+                        <span id="lastNameError"
+                              class="text-danger"
+                              style="display:none;">
+                            Полето е задолжително
+                        </span>
                     </div>
 
 
@@ -127,8 +167,17 @@
 
 
                         <select name="Specijalnost_id"
-                                class="form-control">
+                                class="form-control"
+                                required
+                                oninvalid=" event.preventDefault();
+                                        this.classList.add('is-invalid');
+                                        document.getElementById('specijalnostError').style.display='block' ;"
+                            onchange="this.classList.remove('is-invalid');
+                                        document.getElementById('specijalnostError').style.display = 'none';">
 
+                            <option value="">
+                                Избери специјалност
+                            </option>
 
                             @foreach (var spec in Model.Specijalizacija)
                             {
@@ -137,8 +186,15 @@
                                 </option>
                             }
 
-
                         </select>
+
+                        <span id="specijalnostError"
+                              class="text-danger"
+                              style="display: none;">
+
+                            Полето е задолжително
+
+                        </span>
 
                     </div>
 
@@ -162,7 +218,6 @@
                             </label>
 
                         </div>
-
 
                         <div>
 
