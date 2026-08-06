@@ -1,34 +1,376 @@
-﻿@model List<Appointments>
+﻿@model AppointmentViewModel
 
 @{
     ViewData["Title"] = "Листа на закажани термини";
 }
-   <h1>@ViewData["Title"]</h1>
+<script>
+     function resetAppointmentForm() {
 
-   <table class="table table-striped table-bordered table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th scope="col">Ид</th>
-                <th scope="col">Доктор</th>
-                <th scope="col">Пациент</th>
-                <th scope="col">Датум на термин</th>
-                <th scope="col">Време на термин</th>
-                <th scope="col">Статус</th>
-                <th scope="col">Забелешки</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach(var rez in Model)
-            {
+         document.querySelector('input[name="id"]').value = 0;
+
+         document.querySelector('select[name="doctor_id"]').value = "";
+
+         document.querySelector('select[name="patientid"]').value = "";
+
+         document.querySelector('input[name="appointmentdate"]').value = "";
+
+         document.querySelector('input[name="appointmenttime"]').value = "";
+
+         document.querySelector('select[name="status_id"]').value = "";
+
+         document.querySelector('textarea[name="notes"]').value = "";
+
+         document.querySelector(".modal-title").innerText = "Додади термин";
+     }
+
+     function editAppointment(id, doctorId, patientId, date, time, statusId, notes) {
+
+         document.querySelector('input[name="id"]').value = id;
+
+         document.querySelector('select[name="doctor_id"]').value = doctorId;
+
+         document.querySelector('select[name="patientid"]').value = patientId;
+
+         document.querySelector('input[name="appointmentdate"]').value = date;
+
+         document.querySelector('input[name="appointmenttime"]').value = time;
+
+         document.querySelector('select[name="status_id"]').value = statusId;
+
+         document.querySelector('textarea[name="notes"]').value = notes;
+
+         document.querySelector(".modal-title").innerText = "Измени термин";
+
+
+         var modal = new bootstrap.Modal(
+             document.getElementById("addModal")
+         );
+
+         modal.show();
+    }
+    
+</script>
+    <h1>@ViewData["Title"]</h1>
+    <div class="text-end mb-3">
+
+        <button class="btn btn-primary"
+                onclick="resetAppointmentForm()"
+                data-bs-toggle="modal"
+                data-bs-target="#addModal">
+
+            Додади
+
+        </button>
+    </div><!-- Modal --><div class="modal fade" id="addModal" tabindex="-1">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Додади термин
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+
+            <form asp-action="Save" method="post">
+
+                <div class="modal-body">
+
+
+                    <input type="hidden"
+                           name="id"
+                           value="0" />
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Доктор
+                        </label>
+
+
+                        <select name="doctor_id"
+                                class="form-control"
+                                required
+                                oninvalid="event.preventDefault();
+                            this.classList.add('is-invalid');
+                            document.getElementById('doctorError').style.display='block' ;"
+                                onchange="this.classList.remove('is-invalid');
+                            document.getElementById('doctorError').style.display = 'none';">
+
+                            <option value="">
+                                Избери доктор
+                            </option>
+
+                            @foreach (var doktor in Model.Doctors)
+                            {
+                                <option value="@doktor.Id">
+                                    @doktor.First_name @doktor.Last_name
+                                </option>
+                            }
+
+                        </select>
+
+                        <span id="doctorError"
+                              class="text-danger"
+                              style="display: none;">
+
+                            Полето е задолжително
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Пациент
+                        </label>
+
+
+                        <select name="patientid"
+                                class="form-control"
+                                required
+                                oninvalid="event.preventDefault();
+                            this.classList.add('is-invalid');
+                            document.getElementById('patientError').style.display='block' ;"
+                                onchange="this.classList.remove('is-invalid');
+                            document.getElementById('patientError').style.display = 'none';">
+
+                            <option value="">
+                                Избери пациент
+                            </option>
+
+                            @foreach (var pacient in Model.Patients)
+                            {
+                                <option value="@pacient.id">
+                                    @pacient.first_name @pacient.last_name
+                                </option>
+                            }
+
+                        </select>
+
+                        <span id="patientError"
+                              class="text-danger"
+                              style="display: none;">
+
+                            Полето е задолжително
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Датум
+                        </label>
+
+                        <input type="date"
+                            name="appointmentdate"
+                            class="form-control"
+                            min="@DateTime.Today.ToString("yyyy-MM-dd")""
+                            required
+                            oninvalid="event.preventDefault();
+                            this.classList.add('is-invalid');
+                            document.getElementById('dateError').style.display='block';"
+                            oninput="this.classList.remove('is-invalid');
+                        document.getElementById('dateError').style.display='none';"/>
+
+                        <span id="dateError"
+                              class="text-danger"
+                              style="display:none;">
+                            Полето е задолжително
+                        </span>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Време
+                        </label>
+
+                        <input type="time"
+                               name="appointmenttime"
+                               class="form-control"
+                               required
+                               oninvalid="event.preventDefault();
+                        this.classList.add('is-invalid');
+                        document.getElementById('timeError').style.display='block';"
+                               oninput="this.classList.remove('is-invalid');
+                        document.getElementById('timeError').style.display='none';" />
+
+                        <span id="timeError"
+                              class="text-danger"
+                              style="display:none;">
+                            Полето е задолжително
+                        </span>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Статус
+                        </label>
+
+
+                        <select name="status_id"
+                                class="form-control"
+                                required
+                                oninvalid=" event.preventDefault();
+                            this.classList.add('is-invalid');
+                            document.getElementById('statusError').style.display='block';"
+                                onchange="this.classList.remove('is-invalid');
+                            document.getElementById('statusError').style.display = 'none';">
+
+                            <option value="">
+                                Избери статус
+                            </option>
+
+                            @foreach (var status in Model.Status)
+                            {
+                                <option value="@status.id">
+                                    @status.status_name
+                                </option>
+                            }
+
+                        </select>
+
+                        <span id="statusError"
+                              class="text-danger"
+                              style="display: none;">
+
+                            Полето е задолжително
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Забелешки
+                        </label>
+
+                        <textarea name="notes"
+                                  class="form-control"></textarea>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="modal-footer">
+
+
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        Зачувај
+
+                    </button>
+
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+
+                        Откажи
+
+                    </button>
+
+
+                </div>
+
+
+            </form>
+
+
+        </div>
+
+    </div>
+</div>
+<table class="table table-striped table-bordered table-hover">
+    <thead class="table-light">
+        <tr>
+            <th scope="col">Ид</th>
+            <th scope="col">Доктор</th>
+            <th scope="col">Пациент</th>
+            <th scope="col">Датум на термин</th>
+            <th scope="col">Време на термин</th>
+            <th scope="col">Статус</th>
+            
+            <th scope="col">Забелешки</th>
+            <th scope="col">Акции</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var rez in Model.Appointments)
+        {
             <tr>
                 <td>@rez.id</td>
                 <td>@rez.doctor_first_name @rez.doctor_last_name</td>
                 <td>@rez.patient_first_name @rez.patient_last_name</td>
-                <td>@rez.appointmentdate.ToString("dd/MM/yyyy")</td>
-                <td>@rez.appointmenttime.Substring(0, 5)</td>
+                <td>@rez.appointmentdate.ToString("dd-MM-yyyy")</td>
+                <td>@(rez.appointmenttime.Length >= 5 ? rez.appointmenttime.Substring(0, 5) : rez.appointmenttime)</td>
                 <td>@rez.status</td>
+                
                 <td>@rez.notes</td>
+                <td>
+
+                    <button class="btn btn-warning btn-sm"
+                            onclick="editAppointment(
+                        @(rez.id ?? 0),
+                        @(rez.doctor_id ?? 0),
+                        @(rez.patientid ?? 0),
+                        '@rez.appointmentdate.ToString("dd-MM-YYYY")',
+                        '@(rez.appointmenttime.Length >= 5 ? rez.appointmenttime.Substring(0, 5) : rez.appointmenttime)',
+                        @(rez.status_id ?? 0),
+                        '@(rez.notes ?? "")'
+                        )">
+
+                        <i class="bi bi-pencil"></i>
+
+                    </button>
+
+
+                    <form asp-controller="Appointments"
+                          asp-action="Delete"
+                          method="post"
+                          style="display:inline;">
+
+                        <input type="hidden"
+                               name="id"
+                               value="@rez.id" />
+
+                        <button type="submit"
+                                class="btn btn-danger btn-sm"
+                                onclick="return confirm('Дали сте сигурни?')">
+
+                            <i class="bi bi-trash"></i>
+
+                        </button>
+
+                    </form>
+
+                </td>
             </tr>
         }
-        </tbody>
-</table>
+    </tbody></table>

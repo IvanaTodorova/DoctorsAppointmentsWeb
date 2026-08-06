@@ -13,12 +13,71 @@ namespace PraksaWebApp.Controllers
             _httpClient = httpClient;
         }
 
+
         public async Task<IActionResult> Index()
         {
             List<Appointments>? termini = await _httpClient.GetFromJsonAsync<List<Appointments>>(
                 "https://localhost:7081/api/Appointments");
 
-            return View(termini);
+            List<Doctor>? doktori = await _httpClient.GetFromJsonAsync<List<Doctor>>(
+                "https://localhost:7081/api/Doctors");
+
+            List<Patient>? pacienti = await _httpClient.GetFromJsonAsync<List<Patient>>(
+                "https://localhost:7081/api/Patients");
+
+            List<Status>? statusi = await _httpClient.GetFromJsonAsync<List<Status>>(
+                "https://localhost:7081/api/Status");
+
+
+            AppointmentViewModel model = new AppointmentViewModel
+            {
+                Appointments = termini,
+                Doctors = doktori,
+                Patients = pacienti,
+                Status = statusi
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Save(Appointments appointment)
+        {
+            HttpResponseMessage response;
+
+            if (appointment.id == null || appointment.id == 0)
+            {
+                response = await _httpClient.PostAsJsonAsync(
+                    "https://localhost:7081/api/Appointments",
+                    appointment
+                );
+            }
+            else
+            {
+                response = await _httpClient.PutAsJsonAsync(
+                    $"https://localhost:7081/api/Appointments?id={appointment.id}",
+                    appointment
+                );
+            }
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return Content(result);
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _httpClient.DeleteAsync(
+                $"https://localhost:7081/api/Appointments?id={id}"
+            );
+
+            return RedirectToAction("Index");
         }
     }
 }
