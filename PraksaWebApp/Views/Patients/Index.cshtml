@@ -7,6 +7,8 @@
 <script>
     function editPatient(id, firstName, lastName, embg, phone, email) {
 
+ 
+
         document.getElementById("patientId").value = id;
         document.getElementById("patientFirstName").value = firstName;
         document.getElementById("patientLastName").value = lastName;
@@ -103,7 +105,7 @@
 
 
                     <span id="firstNameError" class="text-danger" style="display:none;">
-                        Името е задолжително
+                        Полето е задолжително
                     </span>
                 </div>
 
@@ -125,7 +127,7 @@
                     document.getElementById('lastNameError').style.display='none';" />
 
                     <span id="lastNameError" class="text-danger" style="display:none;">
-                        Презимето е задолжително
+                        Полето е задолжително
                     </span>
 
                 </div>
@@ -172,7 +174,7 @@
                     document.getElementById('phoneError').style.display='none';" />
 
                     <span id="phoneError" class="text-danger" style="display:none;">
-                        Телефонскиот број е задолжителен
+                        Полето е задолжително
                     </span>
 
                 </div>

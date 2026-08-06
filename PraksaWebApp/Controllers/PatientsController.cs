@@ -30,21 +30,30 @@ namespace PraksaWebApp.Controllers
         [HttpPost]
         public async Task<IActionResult> Save(Patient patient)
         {
+            HttpResponseMessage response;
+
             if (patient.id == 0)
             {
-                // Додавање нов пациент
-                await _httpClient.PostAsJsonAsync(
+                // Нов пациент
+                response = await _httpClient.PostAsJsonAsync(
                     "https://localhost:7081/api/Patients",
                     patient
                 );
             }
             else
             {
-                // Изменување на постоечки пациент
-                await _httpClient.PutAsJsonAsync(
+                // Измена на постоечки пациент
+                response = await _httpClient.PutAsJsonAsync(
                     $"https://localhost:7081/api/Patients?id={patient.id}",
                     patient
                 );
+            }
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return Content(result);
             }
 
             return RedirectToAction("Index");
