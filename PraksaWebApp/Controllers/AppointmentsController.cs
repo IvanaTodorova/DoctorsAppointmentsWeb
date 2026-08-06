@@ -16,8 +16,8 @@ namespace PraksaWebApp.Controllers
 
         public async Task<IActionResult> Index()
         {
-            List<Appointments>? termini = await _httpClient.GetFromJsonAsync<List<Appointments>>(
-                "https://localhost:7081/api/Appointments");
+            List<Appointments> termini = await _httpClient.GetFromJsonAsync<List<Appointments>>(
+                "https://localhost:7081/api/Appointments") ?? new List<Appointments>();
 
             List<Doctor>? doktori = await _httpClient.GetFromJsonAsync<List<Doctor>>(
                 "https://localhost:7081/api/Doctors");
@@ -39,37 +39,44 @@ namespace PraksaWebApp.Controllers
 
             return View(model);
         }
-
         [HttpPost]
         public async Task<IActionResult> Save(Appointments appointment)
         {
-            HttpResponseMessage response;
+            var appointments = await _httpClient
+                .GetFromJsonAsync<List<Appointments>>(
+                    "https://localhost:7081/api/Appointments"
+                ) ?? new List<Appointments>();
 
-            if (appointment.id == null || appointment.id == 0)
+            bool exists = appointments.Any(a =>
+                a.doctor_id == appointment.doctor_id &&
+                a.appointmentdate.Date == appointment.appointmentdate.Date &&
+                a.appointmenttime == appointment.appointmenttime &&
+                a.id != appointment.id
+            );
+
+            if (exists)
             {
-                response = await _httpClient.PostAsJsonAsync(
+                TempData["Error"] = "Докторот веќе има закажано термин во тоа време!";
+                return RedirectToAction("Index");
+            }
+
+            if (appointment.id == 0)
+            {
+                await _httpClient.PostAsJsonAsync(
                     "https://localhost:7081/api/Appointments",
                     appointment
                 );
             }
             else
             {
-                response = await _httpClient.PutAsJsonAsync(
+                await _httpClient.PutAsJsonAsync(
                     $"https://localhost:7081/api/Appointments?id={appointment.id}",
                     appointment
                 );
             }
 
-            var result = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return Content(result);
-            }
-
             return RedirectToAction("Index");
         }
-
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {

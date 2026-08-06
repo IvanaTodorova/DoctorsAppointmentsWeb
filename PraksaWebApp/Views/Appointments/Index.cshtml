@@ -51,6 +51,14 @@
     
 </script>
     <h1>@ViewData["Title"]</h1>
+    
+    @if (TempData["Error"] != null)
+    {
+
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
     <div class="text-end mb-3">
 
         <button class="btn btn-primary"
@@ -180,7 +188,7 @@
                         <input type="date"
                             name="appointmentdate"
                             class="form-control"
-                            min="@DateTime.Today.ToString("yyyy-MM-dd")""
+                            min="@DateTime.Today.ToString("yyyy-MM-dd")"
                             required
                             oninvalid="event.preventDefault();
                             this.classList.add('is-invalid');
