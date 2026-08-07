@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
 using PraksaWebApp.Models;
 
@@ -7,19 +8,27 @@ namespace PraksaWebApp.Controllers
     public class StatusController : Controller
     {
         private readonly HttpClient _httpClient;
+        private readonly ApiSettings _apiSettings;
 
-        public StatusController(HttpClient httpClient)
+        public StatusController(
+            HttpClient httpClient,
+            IOptions<ApiSettings> apiSettings)
         {
             _httpClient = httpClient;
+            _apiSettings = apiSettings.Value;
         }
+
 
         public async Task<IActionResult> Index()
         {
             List<Status>? status = await _httpClient.GetFromJsonAsync<List<Status>>(
-                "https://localhost:7081/api/Status");
+                _apiSettings.BaseUrl + "Status"
+            );
 
             return View(status);
         }
+
+
         [HttpPost]
         public async Task<IActionResult> Save(Status status)
         {
@@ -29,7 +38,7 @@ namespace PraksaWebApp.Controllers
             if (status.id == 0)
             {
                 var response = await _httpClient.PostAsJsonAsync(
-                    "https://localhost:7081/api/Status",
+                    _apiSettings.BaseUrl + "Status",
                     status
                 );
 
@@ -38,7 +47,7 @@ namespace PraksaWebApp.Controllers
             else
             {
                 var response = await _httpClient.PutAsJsonAsync(
-                    $"https://localhost:7081/api/Status?id={status.id}",
+                    $"{_apiSettings.BaseUrl}Status?id={status.id}",
                     status
                 );
 
@@ -47,11 +56,13 @@ namespace PraksaWebApp.Controllers
 
             return RedirectToAction("Index");
         }
+
+
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
             await _httpClient.DeleteAsync(
-                $"https://localhost:7081/api/Status?id={id}"
+                $"{_apiSettings.BaseUrl}Status?id={id}"
             );
 
             return RedirectToAction("Index");

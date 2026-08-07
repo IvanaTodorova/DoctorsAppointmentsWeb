@@ -189,7 +189,8 @@
                     <input type="email"
                            id="patientEmail"
                            name="email"
-                           class="form-control" />
+                           class="form-control" 
+                           />
 
                 </div>
 
@@ -307,3 +308,20 @@
     </tbody>
 
 </table>
+<nav>
+    <ul class="pagination justify-content-center">
+
+        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+        {
+            <li class="page-item @(ViewBag.CurrentPage == i ? "active" : "")">
+
+                <a class="page-link"
+                   href="@Url.Action("Index", new { page = i })">
+                    @i
+                </a>
+
+            </li>
+        }
+
+    </ul>
+</nav>

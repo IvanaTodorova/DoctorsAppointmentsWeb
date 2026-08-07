@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
 using PraksaWebApp.Models;
 
@@ -7,32 +8,60 @@ namespace PraksaWebApp.Controllers
     public class DoctorsController : Controller
     {
         private readonly HttpClient _httpClient;
+        private readonly ApiSettings _apiSettings;
 
-        public DoctorsController(HttpClient httpClient)
+        public DoctorsController(
+            HttpClient httpClient,
+            IOptions<ApiSettings> apiSettings)
         {
             _httpClient = httpClient;
+            _apiSettings = apiSettings.Value;
         }
 
-        public async Task<IActionResult> Index()
+
+        public async Task<IActionResult> Index(int page = 1)
         {
-            List<Doctor>? doktori = await _httpClient.GetFromJsonAsync<List<Doctor>>(
-                "https://localhost:7081/api/Doctors"
+            List<Doctor> doktori =
+                await _httpClient.GetFromJsonAsync<List<Doctor>>(
+                    _apiSettings.BaseUrl + "Doctors"
+                ) ?? new List<Doctor>();
+
+
+            List<Tipovi_na_specijalizacija> specijalizacii =
+                await _httpClient.GetFromJsonAsync<List<Tipovi_na_specijalizacija>>(
+                    _apiSettings.BaseUrl + "Tipovi_Na_Specijalizacija"
+                ) ?? new List<Tipovi_na_specijalizacija>();
+
+
+            int pageSize = 10;
+
+
+            int totalPages = (int)Math.Ceiling(
+                doktori.Count / (double)pageSize
             );
 
-            List<Tipovi_na_specijalizacija>? specijalizacii = await _httpClient.GetFromJsonAsync<List<Tipovi_na_specijalizacija>>(
-                "https://localhost:7081/api/Tipovi_Na_Specijalizacija"
-            );
+
+            var doktoriNaStrana = doktori
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
 
 
             DoctorViewModel model = new DoctorViewModel
             {
-                Doctors = doktori,
+                Doctors = doktoriNaStrana,
                 Specijalizacija = specijalizacii
             };
 
 
             return View(model);
         }
+
+
         [HttpPost]
         public async Task<IActionResult> Save(Doctor doctor)
         {
@@ -41,20 +70,22 @@ namespace PraksaWebApp.Controllers
                 return RedirectToAction("Index");
             }
 
+
             if (doctor.Id == null || doctor.Id == 0)
             {
                 await _httpClient.PostAsJsonAsync(
-                    "https://localhost:7081/api/Doctors",
+                    _apiSettings.BaseUrl + "Doctors",
                     doctor
                 );
             }
             else
             {
                 await _httpClient.PutAsJsonAsync(
-                    $"https://localhost:7081/api/Doctors?id={doctor.Id}",
+                    $"{_apiSettings.BaseUrl}Doctors?id={doctor.Id}",
                     doctor
                 );
             }
+
 
             return RedirectToAction("Index");
         }
@@ -64,7 +95,7 @@ namespace PraksaWebApp.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             await _httpClient.DeleteAsync(
-                $"https://localhost:7081/api/Doctors?id={id}"
+                $"{_apiSettings.BaseUrl}Doctors?id={id}"
             );
 
             return RedirectToAction("Index");
