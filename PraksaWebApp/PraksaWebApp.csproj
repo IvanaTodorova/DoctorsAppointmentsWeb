@@ -6,4 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Include="Views\Shared\_AppointmentTable.cshtml" />
+  </ItemGroup>
+
 </Project>

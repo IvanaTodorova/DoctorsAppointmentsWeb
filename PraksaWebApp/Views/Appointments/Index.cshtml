@@ -3,6 +3,18 @@
 @{
     ViewData["Title"] = "Листа на закажани термини";
 }
+
+<style>
+    table thead th a {
+        color: #1f3f55;
+        text-decoration: none;
+    }
+
+    table thead th a:hover {
+        text-decoration: underline;
+        cursor: pointer;
+    }
+</style>
 <script>
      function resetAppointmentForm() {
 
@@ -50,26 +62,163 @@
     }
     
 </script>
-    <h1>@ViewData["Title"]</h1>
-    
-    @if (TempData["Error"] != null)
-    {
 
+    <h1>@ViewData["Title"]</h1>
+
+<div class="text-end mb-3">
+
+    <div class="dropdown d-inline-block">
+
+        <button class="btn btn-primary dropdown-toggle"
+                type="button"
+                data-bs-toggle="dropdown">
+            Филтрирај
+        </button>
+
+        <ul class="dropdown-menu">
+
+            <li>
+                <h6 class="dropdown-header">
+                    Избери:
+                </h6>
+            </li>
+
+            <li>
+                <a class="dropdown-item"
+                   href="#"
+                   data-bs-toggle="modal"
+                   data-bs-target="#dateFilterModal">
+                    Датум
+                </a>
+            </li>
+
+            <li>
+                <a class="dropdown-item" href="#">
+                    Време
+                </a>
+            </li>
+
+            <li>
+                <a class="dropdown-item" href="#">
+                    Пациент
+                </a>
+            </li>
+
+            <li>
+                <a class="dropdown-item" href="#">
+                    Лекар
+                </a>
+            </li>
+
+            <li>
+                <a class="dropdown-item" href="#">
+                    Статус
+                </a>
+            </li>
+
+        </ul>
+
+    </div>
+
+    <button class="btn btn-primary"
+            onclick="resetAppointmentForm()"
+            data-bs-toggle="modal"
+            data-bs-target="#addModal">
+
+        Додади
+
+    </button>
+
+</div>
+
+<!-- Прозорче за филтрирање по датум -->
+<div class="modal fade" id="dateFilterModal" tabindex="-1">
+
+    <div class="modal-dialog modal-sm">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Избери датум
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <form asp-controller="Appointments"
+                  asp-action="Index"
+                  method="get">
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Датум од
+                        </label>
+
+                        <input type="text"
+                               name="datum_od"
+                               class="form-control"
+                               value="@ViewBag.DatumOd"
+                               id="datumOd" />
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Датум до
+                        </label>
+
+                        <input type="text"
+                               name="datum_do"
+                               class="form-control"
+                               value="@ViewBag.DatumDo"
+                               id="datumDo" />
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Филтрирај
+
+                    </button>
+
+                    <a asp-controller="Appointments"
+                       asp-action="Index"
+                       class="btn btn-secondary">
+                        Исчисти
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+</div>
+
+@if (TempData["Error"] != null)
+{
     <div class="alert alert-danger">
         @TempData["Error"]
     </div>
 }
-    <div class="text-end mb-3">
 
-        <button class="btn btn-primary"
-                onclick="resetAppointmentForm()"
-                data-bs-toggle="modal"
-                data-bs-target="#addModal">
-
-            Додади
-
-        </button>
-    </div><!-- Modal --><div class="modal fade" id="addModal" tabindex="-1">
+<!-- Modal -->
+<div class="modal fade" id="addModal" tabindex="-1">
 
     <div class="modal-dialog">
 
@@ -87,7 +236,6 @@
                 </button>
 
             </div>
-
 
             <form asp-action="Save" method="post">
 
@@ -137,7 +285,6 @@
                         </span>
 
                     </div>
-
 
                     <div class="mb-3">
 
@@ -315,73 +462,10 @@
 
     </div>
 </div>
-<table class="table table-striped table-bordered table-hover">
-    <thead class="table-light">
-        <tr>
-            <th scope="col">Ид</th>
-            <th scope="col">Доктор</th>
-            <th scope="col">Пациент</th>
-            <th scope="col">Датум на термин</th>
-            <th scope="col">Време на термин</th>
-            <th scope="col">Статус</th>
-            
-            <th scope="col">Забелешки</th>
-            <th scope="col">Акции</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var rez in Model.Appointments)
-        {
-            <tr>
-                <td>@rez.id</td>
-                <td>@rez.doctor_first_name @rez.doctor_last_name</td>
-                <td>@rez.patient_first_name @rez.patient_last_name</td>
-                <td>@rez.appointmentdate.ToString("dd.MM.yyyy")</td>
-                <td>@(rez.appointmenttime.Length >= 5 ? rez.appointmenttime.Substring(0, 5) : rez.appointmenttime)</td>
-                <td>@rez.status</td>
-                
-                <td>@rez.notes</td>
-                <td>
 
-                    <button class="btn btn-warning btn-sm"
-                            onclick="editAppointment(
-                        @(rez.id ?? 0),
-                        @(rez.doctor_id ?? 0),
-                        @(rez.patientid ?? 0),
-                        '@rez.appointmentdate.ToString("dd-MM-YYYY")',
-                        '@(rez.appointmenttime.Length >= 5 ? rez.appointmenttime.Substring(0, 5) : rez.appointmenttime)',
-                        @(rez.status_id ?? 0),
-                        '@(rez.notes ?? "")'
-                        )">
+<partial name="~/Views/Shared/_AppointmentTable.cshtml"
+         model="Model.Appointments" />
 
-                        <i class="bi bi-pencil"></i>
-
-                    </button>
-
-
-                    <form asp-controller="Appointments"
-                          asp-action="Delete"
-                          method="post"
-                          style="display:inline;">
-
-                        <input type="hidden"
-                               name="id"
-                               value="@rez.id" />
-
-                        <button type="submit"
-                                class="btn btn-danger btn-sm"
-                                onclick="return confirm('Дали сте сигурни?')">
-
-                            <i class="bi bi-trash"></i>
-
-                        </button>
-
-                    </form>
-
-                </td>
-            </tr>
-        }
-    </tbody></table>
 <nav>
     <ul class="pagination justify-content-center">
 
@@ -390,12 +474,33 @@
             <li class="page-item @(ViewBag.CurrentPage == i ? "active" : "")">
 
                 <a class="page-link"
-                   href="@Url.Action("Index", new { page = i })">
+                   href="@Url.Action("Index", new
+                   {
+                       page = i,
+                       datum_od = ViewBag.DatumOd,
+                       datum_do = ViewBag.DatumDo
+                   })">
                     @i
                 </a>
 
             </li>
         }
-
     </ul>
 </nav>
+@section Scripts {
+    <script>
+        flatpickr('input[name="datum_od"]', {
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d/m/Y",
+            allowInput: true
+        });
+
+        flatpickr('input[name="datum_do"]', {
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d/m/Y",
+            allowInput: true
+        });
+    </script>
+}

@@ -1,0 +1,132 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model IEnumerable<Appointments>
+
+<table class="table table-striped table-bordered table-hover">
+    <thead class="table-info">
+    <tr>
+        <th>
+            <a href="@Url.Action("Index", new
+            {
+                sort = "date",
+                datum_od = ViewBag.DatumOd,
+                datum_do = ViewBag.DatumDo
+            })">
+                Датум
+            </a>
+        </th>
+
+        <th>
+            <a href="@Url.Action("Index", new
+            {
+                sort = "time",
+                datum_od = ViewBag.DatumOd,
+                datum_do = ViewBag.DatumDo
+            })">
+                Време
+            </a>
+        </th>
+
+        <th>
+            <a href="@Url.Action("Index", new
+            {
+                sort = "patient",
+                datum_od = ViewBag.DatumOd,
+                datum_do = ViewBag.DatumDo
+            })">
+                Пациент
+            </a>
+        </th>
+
+        <th>
+            <a href="@Url.Action("Index", new
+            {
+                sort = "doctor",
+                datum_od = ViewBag.DatumOd,
+                datum_do = ViewBag.DatumDo
+            })">
+                Лекар
+            </a>
+        </th>
+
+        <th>
+            <a href="@Url.Action("Index", new
+            {
+                sort = "status",
+                datum_od = ViewBag.DatumOd,
+                datum_do = ViewBag.DatumDo
+            })">
+                Статус
+            </a>
+        </th>
+
+        <th>Акции</th>
+    </tr>
+</thead>
+
+    <tbody>
+        @foreach (var rez in Model)
+        {
+            <tr>
+                <td>
+                    @rez.appointmentdate.ToString("dd.MM.yyyy")
+                </td>
+
+                <td>
+                    @(rez.appointmenttime.Length >= 5
+                        ? rez.appointmenttime.Substring(0, 5)
+                        : rez.appointmenttime)
+                </td>
+
+                <td>
+                    @rez.patient_first_name @rez.patient_last_name
+                </td>
+
+                <td>
+                    @rez.doctor_first_name @rez.doctor_last_name
+                </td>
+
+                <td>
+                    @rez.status
+                </td>
+
+                <td>
+                    <button class="btn btn-warning btn-sm"
+                            onclick="editAppointment(
+                                @(rez.id ?? 0),
+                                @(rez.doctor_id ?? 0),
+                                @(rez.patientid ?? 0),
+                                '@rez.appointmentdate.ToString("dd-MM-yyyy")',
+                                '@(rez.appointmenttime.Length >= 5 ? rez.appointmenttime.Substring(0, 5) : rez.appointmenttime)',
+                                @(rez.status_id ?? 0),
+                                '@(rez.notes ?? "")'
+                            )">
+
+                        <i class="bi bi-pencil"></i>
+
+                    </button>
+
+                    <form asp-controller="Appointments"
+                          asp-action="Delete"
+                          method="post"
+                          style="display:inline;">
+
+                        <input type="hidden"
+                               name="id"
+                               value="@rez.id" />
+
+                        <button type="submit"
+                                class="btn btn-danger btn-sm"
+                                onclick="return confirm('Дали сте сигурни?')">
+
+                            <i class="bi bi-trash"></i>
+
+                        </button>
+
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

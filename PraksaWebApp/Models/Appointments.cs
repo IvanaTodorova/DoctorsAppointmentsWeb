@@ -8,6 +8,7 @@
         public string? doctor_first_name { get; set; }
         public string? doctor_last_name { get; set; }
 
+        public string? specijalnost { get; set; }
         public int? patientid { get; set; }
         public string? patient_first_name { get; set; }
         public string? patient_last_name { get; set; }
