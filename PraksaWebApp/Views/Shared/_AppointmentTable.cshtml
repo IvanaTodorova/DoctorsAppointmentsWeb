@@ -18,14 +18,16 @@
         </th>
 
         <th>
-            <a href="@Url.Action("Index", new
-            {
-                sort = "time",
-                datum_od = ViewBag.DatumOd,
-                datum_do = ViewBag.DatumDo
-            })">
-                Време
-            </a>
+                <a href="@Url.Action("Index", new
+                   {
+                       sort = "time",
+                       datum_od = ViewBag.DatumOd,
+                       datum_do = ViewBag.DatumDo,
+                       vreme_od = Context.Request.Query["vreme_od"],
+                       vreme_do = Context.Request.Query["vreme_do"]
+                   })">
+                        Време
+                  </a>      
         </th>
 
         <th>

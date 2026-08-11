@@ -5,6 +5,15 @@
 }
 
 <style>
+
+    /* Сокриј ги нативните стрелки/календари од прелистувачот за тоа поле */
+    input.no-calendar::-webkit-calendar-picker-indicator,
+    input.no-calendar::-webkit-inner-spin-button {
+        display: none !important;
+        -webkit-appearance: none !important;
+    }
+
+
     table thead th a {
         color: #1f3f55;
         text-decoration: none;
@@ -65,6 +74,7 @@
 
     <h1>@ViewData["Title"]</h1>
 
+ 
 <div class="text-end mb-3">
 
     <div class="dropdown d-inline-block">
@@ -93,25 +103,37 @@
             </li>
 
             <li>
-                <a class="dropdown-item" href="#">
+                <a class="dropdown-item"
+                   href="#"
+                   data-bs-toggle="modal"
+                   data-bs-target="#timeFilterModal">
                     Време
                 </a>
             </li>
 
             <li>
-                <a class="dropdown-item" href="#">
+                <a class="dropdown-item"
+                   href="#"
+                   data-bs-toggle="modal"
+                   data-bs-target="#patientFilterModal">
                     Пациент
                 </a>
             </li>
 
             <li>
-                <a class="dropdown-item" href="#">
-                    Лекар
+                <a class="dropdown-item"
+                   href="#"
+                   data-bs-toggle="modal"
+                   data-bs-target="#doctorFilterModal">
+                    Доктор
                 </a>
             </li>
 
             <li>
-                <a class="dropdown-item" href="#">
+                <a class="dropdown-item"
+                   href="#"
+                   data-bs-toggle="modal"
+                   data-bs-target="#statusFilterModal">
                     Статус
                 </a>
             </li>
@@ -119,6 +141,23 @@
         </ul>
 
     </div>
+
+    @if (!string.IsNullOrEmpty(ViewBag.DatumOd) ||
+         !string.IsNullOrEmpty(ViewBag.DatumDo) ||
+         !string.IsNullOrEmpty(ViewBag.VremeOd) ||
+         !string.IsNullOrEmpty(ViewBag.VremeDo) ||
+         !string.IsNullOrEmpty(ViewBag.Patient) ||
+         !string.IsNullOrEmpty(ViewBag.Doctor) ||
+         !string.IsNullOrEmpty(ViewBag.StatusFilter))
+    {
+        <a asp-controller="Appointments"
+           asp-action="Index"
+           class="btn btn-outline-secondary btn-sm ms-1"
+           title="Исчисти филтер">
+
+            ×
+        </a>
+    }
 
     <button class="btn btn-primary"
             onclick="resetAppointmentForm()"
@@ -208,6 +247,367 @@
         </div>
 
     </div>
+</div>
+
+<!-- Прозорче за филтрирање по време -->
+<div class="modal fade" id="timeFilterModal" tabindex="-1">
+
+    <div class="modal-dialog modal-sm">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Избери време
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <form asp-controller="Appointments"
+                  asp-action="Index"
+                  method="get">
+
+                <input type="hidden"
+                       name="datum_od"
+                       value="@ViewBag.DatumOd" />
+
+                <input type="hidden"
+                       name="datum_do"
+                       value="@ViewBag.DatumDo" />
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Време од
+                        </label>
+
+                        <input type="time"
+                               name="vreme_od"
+                               class="form-control" />
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Време до
+                        </label>
+
+                        <input type="time"
+                               name="vreme_do"
+                               class="form-control" />
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Филтрирај
+                    </button>
+
+                    <a asp-controller="Appointments"
+                       asp-action="Index"
+                       class="btn btn-secondary">
+                        Исчисти
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Прозорче за филтрирање по пациент -->
+<div class="modal fade" id="patientFilterModal" tabindex="-1">
+
+    <div class="modal-dialog modal-sm">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Избери пациент
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <form asp-controller="Appointments"
+                  asp-action="Index"
+                  method="get">
+
+                <input type="hidden"
+                       name="datum_od"
+                       value="@ViewBag.DatumOd" />
+
+                <input type="hidden"
+                       name="datum_do"
+                       value="@ViewBag.DatumDo" />
+
+                <input type="hidden"
+                       name="vreme_od"
+                       value="@ViewBag.VremeOd" />
+
+                <input type="hidden"
+                       name="vreme_do"
+                       value="@ViewBag.VremeDo" />
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Име на пациент
+                        </label>
+
+                        <input type="search"
+                               name="patient"
+                               class="form-control no-calendar"
+                               autocomplete="off"
+                               value="@Context.Request.Query["patient"]" />
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Филтрирај
+                    </button>
+
+                    <a asp-controller="Appointments"
+                       asp-action="Index"
+                       class="btn btn-secondary">
+                        Исчисти
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Прозорче за филтрирање по доктор-->
+<div class="modal fade" id="doctorFilterModal" tabindex="-1">
+
+    <div class="modal-dialog modal-sm">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Избери доктор
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <form asp-controller="Appointments"
+                  asp-action="Index"
+                  method="get">
+
+                <input type="hidden"
+                       name="datum_od"
+                       value="@ViewBag.DatumOd" />
+
+                <input type="hidden"
+                       name="datum_do"
+                       value="@ViewBag.DatumDo" />
+
+                <input type="hidden"
+                       name="vreme_od"
+                       value="@ViewBag.VremeOd" />
+
+                <input type="hidden"
+                       name="vreme_do"
+                       value="@ViewBag.VremeDo" />
+
+                <input type="hidden"
+                       name="patient"
+                       value="@ViewBag.Patient" />
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Име на доктор
+                        </label>
+
+                        <input type="search"
+                               name="doctor"
+                               class="form-control"
+                               autocomplete="off"
+                               value="@ViewBag.Doctor" />
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Филтрирај
+                    </button>
+
+                    <a asp-controller="Appointments"
+                       asp-action="Index"
+                       class="btn btn-secondary">
+                        Исчисти
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Прозорче за филтрирање по статус -->
+<div class="modal fade" id="statusFilterModal" tabindex="-1">
+
+    <div class="modal-dialog modal-sm">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Избери статус
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <form asp-controller="Appointments"
+                  asp-action="Index"
+                  method="get">
+
+                <input type="hidden"
+                       name="datum_od"
+                       value="@ViewBag.DatumOd" />
+
+                <input type="hidden"
+                       name="datum_do"
+                       value="@ViewBag.DatumDo" />
+
+                <input type="hidden"
+                       name="vreme_od"
+                       value="@ViewBag.VremeOd" />
+
+                <input type="hidden"
+                       name="vreme_do"
+                       value="@ViewBag.VremeDo" />
+
+                <input type="hidden"
+                       name="patient"
+                       value="@ViewBag.Patient" />
+
+                <input type="hidden"
+                       name="doctor"
+                       value="@ViewBag.Doctor" />
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Статус
+                        </label>
+
+                        <select name="status"
+                                class="form-control">
+
+                            <option value="">
+                                Избери статус
+                            </option>
+
+                            <option value="ЗАКАЖАН"
+                                    selected="@(ViewBag.StatusFilter == "ЗАКАЖАН")">
+                                ЗАКАЖАН
+                            </option>
+
+                            <option value="ВО ТЕК"
+                                    selected="@(ViewBag.StatusFilter == "ВО ТЕК")">
+                                ВО ТЕК
+                            </option>
+
+                            <option value="ЗАВРШЕН"
+                                    selected="@(ViewBag.StatusFilter == "ЗАВРШЕН")">
+                                ЗАВРШЕН
+                            </option>
+
+                            <option value="ОТКАЖАН"
+                                    selected="@(ViewBag.StatusFilter == "ОТКАЖАН")">
+                                ОТКАЖАН
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Филтрирај
+                    </button>
+
+                    <a asp-controller="Appointments"
+                       asp-action="Index"
+                       class="btn btn-secondary">
+                        Исчисти
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
 </div>
 
 @if (TempData["Error"] != null)
@@ -454,9 +854,58 @@
 
                 </div>
 
-
             </form>
 
+        </div>
+
+    </div>
+</div>
+
+<div class="d-flex justify-content-center mb-4">
+    <div class="border rounded-3 shadow-sm px-4 py-2"
+         style="width: 70%; background-color: #f8f9fa;">
+
+        <div class="d-flex justify-content-around text-center">
+
+            <div>
+                <div class="fw-bold fs-5 text-primary counter"
+                     data-target="@ViewBag.TotalAppointments">
+                    0
+                </div>
+                <small class="text-muted">
+                    Вкупно
+                </small>
+            </div>
+
+            <div>
+                <div class="fw-bold fs-5 text-warning counter"
+                     data-target="@ViewBag.ScheduledAppointments">
+                    0
+                </div>
+                <small class="text-muted">
+                    Закажани
+                </small>
+            </div>
+
+            <div>
+                <div class="fw-bold fs-5 text-success counter"
+                     data-target="@ViewBag.CompletedAppointments">
+                    0
+                </div>
+                <small class="text-muted">
+                    Завршени
+                </small>
+            </div>
+
+            <div>
+                <div class="fw-bold fs-5 text-danger counter"
+                     data-target="@ViewBag.CancelledAppointments">
+                    0
+                </div>
+                <small class="text-muted">
+                    Откажани
+                </small>
+            </div>
 
         </div>
 
@@ -478,7 +927,13 @@
                    {
                        page = i,
                        datum_od = ViewBag.DatumOd,
-                       datum_do = ViewBag.DatumDo
+                       datum_do = ViewBag.DatumDo,
+                       vreme_od = ViewBag.VremeOd,
+                       vreme_do = ViewBag.VremeDo,
+                       patient = ViewBag.Patient,
+                       doctor = ViewBag.Doctor,
+                       status = ViewBag.StatusFilter,
+                       sort = ViewBag.Sort
                    })">
                     @i
                 </a>
@@ -489,18 +944,44 @@
 </nav>
 @section Scripts {
     <script>
-        flatpickr('input[name="datum_od"]', {
+        flatpickr('#datumOd', {
             dateFormat: "Y-m-d",
             altInput: true,
             altFormat: "d/m/Y",
             allowInput: true
         });
 
-        flatpickr('input[name="datum_do"]', {
+        flatpickr('#datumDo', {
             dateFormat: "Y-m-d",
             altInput: true,
             altFormat: "d/m/Y",
             allowInput: true
+        });
+
+
+        document.querySelectorAll('.counter').forEach(counter => {
+
+            const target = Number(counter.getAttribute('data-target'));
+            let current = 0;
+
+            const duration = 800;
+            const increment = target / (duration / 20);
+
+            const updateCounter = () => {
+
+                current += increment;
+
+                if (current >= target) {
+                    counter.textContent = target;
+                    return;
+                }
+
+                counter.textContent = Math.floor(current);
+
+                setTimeout(updateCounter, 20);
+            };
+
+            updateCounter();
         });
     </script>
 }

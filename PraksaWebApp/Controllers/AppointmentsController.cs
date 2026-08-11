@@ -18,11 +18,16 @@ namespace PraksaWebApp.Controllers
             _apiSettings = apiSettings.Value;
         }
 
-public async Task<IActionResult> Index(
-    int page = 1,
-    DateTime? datum_od = null,
-    DateTime? datum_do = null,
-    string? sort = null)
+        public async Task<IActionResult> Index(
+            int page = 1,
+            DateTime? datum_od = null,
+            DateTime? datum_do = null,
+            TimeSpan? vreme_od = null,
+            TimeSpan? vreme_do = null,
+            string? patient = null,
+            string? doctor = null,
+            string? status = null,
+            string? sort = null)
         {
             try
             {
@@ -50,7 +55,9 @@ public async Task<IActionResult> Index(
                     termini = termini.OrderBy(x => x.appointmentdate).ToList();
 
                 else if (sort == "time")
-                    termini = termini.OrderBy(x => x.appointmenttime).ToList();
+                    termini = termini
+                        .OrderBy(x => TimeSpan.Parse(x.appointmenttime))
+                        .ToList();
 
                 else if (sort == "patient")
                     termini = termini.OrderBy(x => x.patient_first_name).ToList();
@@ -61,6 +68,74 @@ public async Task<IActionResult> Index(
                 else if (sort == "status")
                     termini = termini.OrderBy(x => x.status).ToList();
 
+                if (vreme_od.HasValue)
+                {
+                    termini = termini
+                        .Where(x => TimeSpan.TryParse(x.appointmenttime, out TimeSpan vreme)
+                                    && vreme >= vreme_od.Value)
+                        .ToList();
+                }
+
+                if (vreme_do.HasValue)
+                {
+                    termini = termini
+                        .Where(x => TimeSpan.TryParse(x.appointmenttime, out TimeSpan vreme)
+                                    && vreme <= vreme_do.Value)
+                        .ToList();
+                }
+
+                if (!string.IsNullOrWhiteSpace(patient))
+                {
+                    termini = termini
+                        .Where(x => (x.patient_first_name ?? "")
+                            .StartsWith(patient, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+
+                if (!string.IsNullOrWhiteSpace(doctor))
+                {
+                    termini = termini
+                        .Where(x => (x.doctor_first_name ?? "")
+                            .StartsWith(doctor, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+
+                if (!string.IsNullOrWhiteSpace(status))
+                {
+                    termini = termini
+                        .Where(x => (x.status ?? "")
+                            .Equals(status, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+
+                if (vreme_od.HasValue || vreme_do.HasValue)
+                {
+                    if (datum_od.HasValue || datum_do.HasValue)
+                    {
+                        termini = termini
+                            .OrderBy(x => x.appointmentdate)
+                            .ThenBy(x => TimeSpan.Parse(x.appointmenttime))
+                            .ToList();
+                    }
+                    else
+                    {
+                        termini = termini
+                            .OrderBy(x => TimeSpan.Parse(x.appointmenttime))
+                            .ToList();
+                    }
+                }
+
+                // Статистика според филтрираните термини
+                ViewBag.TotalAppointments = termini.Count;
+
+                ViewBag.ScheduledAppointments = termini.Count(x =>
+                    (x.status ?? "").Equals("ЗАКАЖАН", StringComparison.OrdinalIgnoreCase));
+
+                ViewBag.CompletedAppointments = termini.Count(x =>
+                    (x.status ?? "").Equals("ЗАВРШЕН", StringComparison.OrdinalIgnoreCase));
+
+                ViewBag.CancelledAppointments = termini.Count(x =>
+                    (x.status ?? "").Equals("ОТКАЖАН", StringComparison.OrdinalIgnoreCase));
 
                 List<Doctor> doktori =
                     await _httpClient.GetFromJsonAsync<List<Doctor>>(
@@ -78,6 +153,18 @@ public async Task<IActionResult> Index(
                     await _httpClient.GetFromJsonAsync<List<Status>>(
                         _apiSettings.BaseUrl + "Status"
                     ) ?? new List<Status>();
+
+                // Статистика според филтрираните термини
+                ViewBag.TotalAppointments = termini.Count;
+
+                ViewBag.ScheduledAppointments = termini.Count(x =>
+                    (x.status ?? "").Equals("ЗАКАЖАН", StringComparison.OrdinalIgnoreCase));
+
+                ViewBag.CompletedAppointments = termini.Count(x =>
+                    (x.status ?? "").Equals("ЗАВРШЕН", StringComparison.OrdinalIgnoreCase));
+
+                ViewBag.CancelledAppointments = termini.Count(x =>
+                    (x.status ?? "").Equals("ОТКАЖАН", StringComparison.OrdinalIgnoreCase));
 
 
                 int pageSize = 10;
@@ -98,6 +185,12 @@ public async Task<IActionResult> Index(
                 ViewBag.DatumOd = datum_od?.ToString("yyyy-MM-dd");
                 ViewBag.DatumDo = datum_do?.ToString("yyyy-MM-dd");
                 ViewBag.Sort = sort;
+
+                ViewBag.VremeOd = vreme_od?.ToString(@"hh\:mm");
+                ViewBag.VremeDo = vreme_do?.ToString(@"hh\:mm");
+                ViewBag.Patient = patient;
+                ViewBag.Doctor = doctor;
+                ViewBag.StatusFilter = status;
 
                 AppointmentViewModel model = new AppointmentViewModel
                 {
