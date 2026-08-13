@@ -18,6 +18,10 @@ namespace PraksaWebApp.Controllers
             var username = HttpContext.Session.GetString("username");
             var tip = HttpContext.Session.GetInt32("tip_na_korisnik");
 
+            if (HttpContext.Session.GetString("username") == null)
+            {
+                return RedirectToAction("Index", "Korisnik");
+            }
             ViewBag.Username = username;
             ViewBag.Tip = tip;
 

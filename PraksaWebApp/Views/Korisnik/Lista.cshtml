@@ -1,35 +1,193 @@
-﻿@model List<PraksaWebApp.Models.Korisnik>
+﻿@model PraksaWebApp.Models.KorisnikViewModel
 
 @{
     ViewData["Title"] = "Корисници";
 }
 
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
 <h1>Корисници</h1>
+
 <button class="btn btn-primary mb-3"
-         data-bs-toggle="modal"
-         data-bs-target="#addUserModal">
+        data-bs-toggle="modal"
+        data-bs-target="#addUserModal"
+        onclick="onDodadiKorisnikBtnClicked()">
     Додади корисник
 </button>
 
-    <div class="modal fade" id="addUserModal" tabindex="-1">
 
-        <div class="modal-dialog">
+<!-- EDIT USER MODAL -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
 
-            <div class="modal-content">
+    <div class="modal-dialog">
 
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        Додади корисник
-                    </h5>
+        <div class="modal-content">
 
-                    <button type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal">
-                    </button>
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Измени корисник
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <form asp-controller="Korisnik"
+                  asp-action="Update"
+                  method="post">
+
+                <div class="modal-body">
+
+                    <input type="hidden"
+                           name="id"
+                           value="0" />
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Username
+                        </label>
+
+                        <input type="text"
+                               name="username_edit"
+                               class="form-control"
+                               required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Password
+                        </label>
+
+                        <input type="password"
+                               name="pass_edit"
+                               class="form-control"
+                               required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Тип на корисник
+                        </label>
+
+                        <select name="tip_na_korisnik_edit"
+                                id="tip_na_korisnik_edit"
+                                class="form-control"
+                                required>
+
+                            <option value="0">
+                                Администратор
+                            </option>
+
+                            <option value="1">
+                                Доктор
+                            </option>
+
+                            <option value="2">
+                                Пациент
+                            </option>
+
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Избери доктор
+                        </label>
+
+                        <select name="doctor_id_edit"
+                                id="doctor_id_edit"
+                                class="form-control">
+
+                            <option value="">
+                                Избери доктор
+                            </option>
+
+                            @foreach (var doctor in Model.Doctors)
+                            {
+                                <option value="@doctor.Id">
+                                    @doctor.First_name @doctor.Last_name
+                                </option>
+                            }
+
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Избери пациент
+                        </label>
+
+                        <select name="patient_id_edit"
+                                id="patient_id_edit"
+                                class="form-control">
+
+                            <option value="">
+                                Избери пациент
+                            </option>
+
+                            @foreach (var patient in Model.Patients)
+                            {
+                                <option value="@patient.id">
+                                    @patient.first_name @patient.last_name
+                                </option>
+                            }
+
+                        </select>
+                    </div>
+
                 </div>
 
-                <form> 
-                    asp-controller="Korisnik"
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Откажи
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Зачувај
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ADD USER MODAL -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Додади корисник
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <form asp-controller="Korisnik"
                   asp-action="Save"
                   method="post">
 
@@ -41,8 +199,11 @@
                         </label>
 
                         <input type="text"
-                               class="form-control" />
+                               name="username"
+                               class="form-control"
+                               required />
                     </div>
+
 
                     <div class="mb-3">
                         <label class="form-label">
@@ -50,26 +211,95 @@
                         </label>
 
                         <input type="password"
-                               class="form-control" />
+                               name="pass"
+                               class="form-control"
+                               required />
                     </div>
+
 
                     <div class="mb-3">
                         <label class="form-label">
                             Тип на корисник
                         </label>
 
-                        <select class="form-control">
-                            <option value="">Избери тип</option>
-                            <option value="0">Администратор</option>
-                            <option value="1">Доктор</option>
-                            <option value="2">Пациент</option>
+                        <select name="tip_na_korisnik"
+                                id="tip_na_korisnik"
+                                class="form-control"
+                                required>
+                                
+
+                            <option value="">
+                                Избери тип
+                            </option>
+
+                            <option value="0">
+                                Администратор
+                            </option>
+
+                            <option value="1">
+                                Доктор
+                            </option>
+
+                            <option value="2">
+                                Пациент
+                            </option>
+
+                        </select>
+                    </div>
+
+
+                    <div class="mb-3" id="doctorSelectDiv" style="display:block;">
+                        <label class="form-label">
+                            Избери доктор
+                        </label>
+
+                        <select name="doctor_id"
+                                id="doctor_id"
+                                class="form-control">
+
+                            <option value="">
+                                Избери доктор
+                            </option>
+
+                            @foreach (var doctor in Model.Doctors)
+                            {
+                                <option value="@doctor.Id">
+                                    @doctor.First_name @doctor.Last_name
+                                </option>
+                            }
+
+                        </select>
+                    </div>
+
+
+                    <div class="mb-3" id="patientSelectDiv" style="display:block;">
+                        <label class="form-label">
+                            Избери пациент
+                        </label>
+                        
+                        <select name="patient_id"
+                                id="patient_id"
+                                class="form-control">
+
+                            <option value="">
+                                Избери пациент
+                            </option>
+
+                            @foreach (var patient in Model.Patients)
+                            {
+                                <option value="@patient.id">
+                                    @patient.first_name @patient.last_name
+                                </option>
+                            }
+
                         </select>
                     </div>
 
                 </div>
 
+
                 <div class="modal-footer">
-     
+
                     <button type="button"
                             class="btn btn-secondary"
                             data-bs-dismiss="modal">
@@ -80,13 +310,19 @@
                             class="btn btn-primary">
                         Зачувај
                     </button>
+
                 </div>
+
             </form>
-            </div>
 
         </div>
 
     </div>
+
+</div>
+
+
+<!-- USERS TABLE -->
 <table class="table table-bordered table-hover bg-white">
 
     <thead>
@@ -95,18 +331,34 @@
             <th>Username</th>
             <th>Password</th>
             <th>Тип на корисник</th>
+            <th>Доктор</th>
+            <th>Пациент</th>
+            <th>Акции</th>
         </tr>
     </thead>
 
     <tbody>
 
-        @foreach (var korisnik in Model)
+        @foreach (var korisnik in ViewBag.Korisnici)
         {
             <tr>
-                <td>@korisnik.id</td>
-                <td>@korisnik.username</td>
-                <td>@korisnik.pass</td>
+
                 <td>
+                    @korisnik.id
+                </td>
+
+                <td>
+                    @korisnik.username
+                </td>
+
+
+
+                <td>
+                    @korisnik.pass
+                </td>
+
+                <td>
+
                     @if (korisnik.tip_na_korisnik == 0)
                     {
                         <span>Администратор</span>
@@ -119,10 +371,101 @@
                     {
                         <span>Пациент</span>
                     }
+
                 </td>
+
+                <td>
+                    @korisnik.Doctor_name @korisnik.Doctor_surname
+                </td>
+
+                <td>
+                    @korisnik.Patient_name @korisnik.Patient_surname
+                </td>
+
+                <td>
+
+                    <button type="button"
+                            class="btn btn-warning btn-sm"
+                            title="Измени"
+                            onclick="editKorisnik(
+                                '@korisnik.id',
+                                '@korisnik.username',
+                                '@korisnik.pass',
+                                '@korisnik.tip_na_korisnik')">
+
+                        <i class="bi bi-pencil"></i>
+
+                    </button>
+
+                    <form asp-controller="Korisnik"
+                          asp-action="Delete"
+                          method="post"
+                          style="display:inline;">
+
+                        <input type="hidden"
+                               name="id"
+                               value="@korisnik.id" />
+
+                        <button type="submit"
+                                class="btn btn-danger btn-sm"
+                                title="Избриши">
+
+                            <i class="bi bi-trash"></i>
+
+                        </button>
+
+                    </form>
+
+                </td>
+
             </tr>
         }
 
     </tbody>
 
 </table>
+
+
+<script>
+
+    function editKorisnik(id, username, pass, tip) {
+        document.querySelector('input[name="id"]').value = id;
+
+        document.querySelector('input[name="username_edit"]').value = username;
+
+        document.querySelector('input[name="pass_edit"]').value = pass;
+
+        document.querySelector(
+            'select[name="tip_na_korisnik_edit"]'
+        ).value = tip;
+
+
+        var modal = new bootstrap.Modal(
+            document.getElementById("editUserModal")
+        );
+
+        modal.show();
+    }
+
+    function onDodadiKorisnikBtnClicked() {
+        document.querySelector('input[name="id"]').value = null;
+
+        document.querySelector('input[name="username"]').value = null;
+
+        document.querySelector('input[name="pass"]').value = null;
+
+        document.querySelector(
+            'select[name="tip_na_korisnik"]'
+        ).value = null;
+
+        document.querySelector(
+            'select[name="doctor_id"]'
+        ).value = null;
+
+        document.querySelector(
+            'select[name="patient_id"]'
+        ).value = null;
+
+    }
+</script>
+

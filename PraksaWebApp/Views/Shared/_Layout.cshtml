@@ -105,6 +105,58 @@
                            </li>
                         }
                     </ul>
+
+                    @{
+                        var username = Context.Session.GetString("username");
+                    }
+
+                    @if (!string.IsNullOrEmpty(username))
+                    {
+                        <div class="dropdown">
+
+                            <button class="btn btn-light rounded-circle d-flex align-items-center justify-content-center"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                    style="width: 42px; height: 42px;">
+
+                                <i class="bi bi-person-fill"></i>
+
+                            </button>
+
+                            <ul class="dropdown-menu dropdown-menu-end">
+
+                                <li>
+                                    <span class="dropdown-item-text">
+                                        @username
+                                    </span>
+                                </li>
+
+                                <li>
+                                    <hr class="dropdown-divider" />
+                                </li>
+
+                                <li>
+                                    <form asp-controller="Korisnik"
+                                          asp-action="Logout"
+                                          method="post">
+
+                                        <button type="submit"
+                                                class="dropdown-item">
+
+                                            <i class="bi bi-box-arrow-right me-2"></i>
+                                            Одјави се
+
+                                        </button>
+
+                                    </form>
+                                </li>
+
+                            </ul>
+
+                        </div>
+                    }
+
                 </div>
             </div>
         </nav>
