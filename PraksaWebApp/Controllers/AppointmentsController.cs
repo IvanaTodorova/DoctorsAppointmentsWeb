@@ -29,6 +29,15 @@ namespace PraksaWebApp.Controllers
             string? status = null,
             string? sort = null)
         {
+            if (HttpContext.Session.GetString("username") == null)
+            {
+                return RedirectToAction("Index", "Korisnik");
+            }
+
+            var tip = HttpContext.Session.GetInt32("tip_na_korisnik");
+            var patientId = HttpContext.Session.GetInt32("patient_id");
+            var doctorId = HttpContext.Session.GetInt32("doctor_id");
+
             try
             {
                 string url = _apiSettings.BaseUrl + "Appointments";
@@ -48,6 +57,21 @@ namespace PraksaWebApp.Controllers
                 List<Appointments> termini =
                     await _httpClient.GetFromJsonAsync<List<Appointments>>(url)
                     ?? new List<Appointments>();
+
+
+                if (tip == 2 && patientId.HasValue)
+                {
+                    termini = termini
+                        .Where(x => x.patientid == patientId.Value)
+                        .ToList();
+                }
+
+                if (tip == 1 && doctorId.HasValue)
+                {
+                    termini = termini
+                        .Where(x => x.doctor_id == doctorId.Value)
+                        .ToList();
+                }
 
                 termini = termini.OrderBy(x => x.appointmentdate).ToList();
 
@@ -125,23 +149,10 @@ namespace PraksaWebApp.Controllers
                     }
                 }
 
-                // Статистика според филтрираните термини
-                ViewBag.TotalAppointments = termini.Count;
-
-                ViewBag.ScheduledAppointments = termini.Count(x =>
-                    (x.status ?? "").Equals("ЗАКАЖАН", StringComparison.OrdinalIgnoreCase));
-
-                ViewBag.CompletedAppointments = termini.Count(x =>
-                    (x.status ?? "").Equals("ЗАВРШЕН", StringComparison.OrdinalIgnoreCase));
-
-                ViewBag.CancelledAppointments = termini.Count(x =>
-                    (x.status ?? "").Equals("ОТКАЖАН", StringComparison.OrdinalIgnoreCase));
-
                 List<Doctor> doktori =
                     await _httpClient.GetFromJsonAsync<List<Doctor>>(
                         _apiSettings.BaseUrl + "Doctors"
                     ) ?? new List<Doctor>();
-
 
                 List<Patient> pacienti =
                     await _httpClient.GetFromJsonAsync<List<Patient>>(

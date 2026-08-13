@@ -23,6 +23,11 @@ namespace PraksaWebApp.Controllers
         // Ги прикажува сите пациенти
         public async Task<IActionResult> Index(int page = 1)
         {
+            if (HttpContext.Session.GetString("username") == null)
+            {
+                return RedirectToAction("Index", "Korisnik");
+            }
+
             List<Patient>? pacienti =
                 await _httpClient.GetFromJsonAsync<List<Patient>>(
                     _apiSettings.BaseUrl + "Patients"

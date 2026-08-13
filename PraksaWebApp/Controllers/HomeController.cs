@@ -15,6 +15,12 @@ namespace PraksaWebApp.Controllers
 
         public IActionResult Index()
         {
+            var username = HttpContext.Session.GetString("username");
+            var tip = HttpContext.Session.GetInt32("tip_na_korisnik");
+
+            ViewBag.Username = username;
+            ViewBag.Tip = tip;
+
             return View();
         }
 

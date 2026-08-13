@@ -1,0 +1,128 @@
+﻿@model List<PraksaWebApp.Models.Korisnik>
+
+@{
+    ViewData["Title"] = "Корисници";
+}
+
+<h1>Корисници</h1>
+<button class="btn btn-primary mb-3"
+         data-bs-toggle="modal"
+         data-bs-target="#addUserModal">
+    Додади корисник
+</button>
+
+    <div class="modal fade" id="addUserModal" tabindex="-1">
+
+        <div class="modal-dialog">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Додади корисник
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                    </button>
+                </div>
+
+                <form> 
+                    asp-controller="Korisnik"
+                  asp-action="Save"
+                  method="post">
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Username
+                        </label>
+
+                        <input type="text"
+                               class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Password
+                        </label>
+
+                        <input type="password"
+                               class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Тип на корисник
+                        </label>
+
+                        <select class="form-control">
+                            <option value="">Избери тип</option>
+                            <option value="0">Администратор</option>
+                            <option value="1">Доктор</option>
+                            <option value="2">Пациент</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+     
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Откажи
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Зачувај
+                    </button>
+                </div>
+            </form>
+            </div>
+
+        </div>
+
+    </div>
+<table class="table table-bordered table-hover bg-white">
+
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Password</th>
+            <th>Тип на корисник</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var korisnik in Model)
+        {
+            <tr>
+                <td>@korisnik.id</td>
+                <td>@korisnik.username</td>
+                <td>@korisnik.pass</td>
+                <td>
+                    @if (korisnik.tip_na_korisnik == 0)
+                    {
+                        <span>Администратор</span>
+                    }
+                    else if (korisnik.tip_na_korisnik == 1)
+                    {
+                        <span>Доктор</span>
+                    }
+                    else if (korisnik.tip_na_korisnik == 2)
+                    {
+                        <span>Пациент</span>
+                    }
+                </td>
+            </tr>
+        }
+
+    </tbody>
+
+</table>

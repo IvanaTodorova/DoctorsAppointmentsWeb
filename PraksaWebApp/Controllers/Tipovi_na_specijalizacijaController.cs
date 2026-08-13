@@ -21,6 +21,11 @@ namespace PraksaWebApp.Controllers
 
         public async Task<IActionResult> Index()
         {
+            if (HttpContext.Session.GetString("username") == null)
+            {
+                return RedirectToAction("Index", "Korisnik");
+            }
+
             List<Tipovi_na_specijalizacija>? specijalizacija =
                 await _httpClient.GetFromJsonAsync<List<Tipovi_na_specijalizacija>>(
                     _apiSettings.BaseUrl + "Tipovi_Na_Specijalizacija"

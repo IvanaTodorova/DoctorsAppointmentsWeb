@@ -53,16 +53,37 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+
+                    @{
+                        var tip = Context.Session.GetInt32("tip_na_korisnik");
+                    }
+
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Дома</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Doctors" asp-action="Index">Доктори</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Patients" asp-action="Index">Пациенти</a>
-                        </li>
+                        @if (tip == 0 || tip == 1)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark"
+                                   asp-area=""
+                                   asp-controller="Doctors"
+                                   asp-action="Index">
+                                    Доктори
+                                </a>
+                            </li>
+                        }
+                        @if (tip == 0 || tip == 1)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark"
+                                   asp-area=""
+                                   asp-controller="Patients"
+                                   asp-action="Index">
+                                    Пациенти
+                                </a>
+                            </li>
+                        }
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Appointments" asp-action="Index">Термини</a>
                         </li>
@@ -72,6 +93,17 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Tipovi_na_specijalizacija" asp-action="Index">Типови на специјализација</a>
                         </li>
+                        @if (tip == 0)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark"
+                                   asp-area=""
+                                   asp-controller="Korisnik"
+                                   asp-action="Lista">
+                                    Корисник
+                                </a>
+                           </li>
+                        }
                     </ul>
                 </div>
             </div>
