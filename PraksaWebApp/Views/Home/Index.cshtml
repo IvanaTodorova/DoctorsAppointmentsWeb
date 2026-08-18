@@ -1,8 +1,363 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Дома";
+
+    var username = ViewBag.Username as string;
+    var tip = ViewBag.Tip as int?;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+    .home-container {
+        padding: 40px 0;
+    }
+
+    .welcome-section {
+        background: white;
+        border-radius: 16px;
+        padding: 40px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    }
+
+    .welcome-section h1 {
+        color: #1f3f55;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .welcome-section p {
+        color: #6c7a86;
+        font-size: 17px;
+    }
+
+    .welcome-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background-color: #d9f0ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .welcome-icon i {
+        font-size: 32px;
+        color: #1f6f9f;
+    }
+
+    .home-card {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        height: 100%;
+        text-decoration: none;
+        display: block;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: 0.2s;
+    }
+
+        .home-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.10);
+        }
+
+    .card-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 12px;
+        background-color: #eaf6ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+        .card-icon i {
+            font-size: 25px;
+            color: #1f6f9f;
+        }
+
+    .home-card h3 {
+        color: #1f3f55;
+        font-size: 21px;
+        margin-bottom: 8px;
+    }
+
+    .home-card p {
+        color: #7a8791;
+        margin: 0;
+    }
+</style>
+
+
+<div class="container home-container">
+
+    <div class="welcome-section">
+
+        <div class="welcome-icon">
+            <i class="bi bi-heart-pulse-fill"></i>
+        </div>
+
+        <h1>
+            Добредојде, @username!
+        </h1>
+
+        @if (tip == 0)
+        {
+            <p>
+                Добредојде во административниот систем.
+                Од тука можете да управувате со податоците во системот.
+            </p>
+        }
+        else if (tip == 1)
+        {
+            <p>
+                Добредојде во системот.
+                Од тука можете да ги прегледувате и управувате вашите термини.
+            </p>
+        }
+        else if (tip == 2)
+        {
+            <p>
+                Добредојде во системот.
+                Од тука можете да ги прегледувате вашите закажани термини.
+            </p>
+        }
+
+    </div>
+
+    @if (tip == 1 || tip == 2)
+    {
+        var dnevniTermini = ViewBag.DnevniTermini as List<Appointments>
+                             ?? new List<Appointments>();
+
+        <div class="welcome-section">
+
+            <h3 style="color:#1f3f55;">
+                <i class="bi bi-calendar-day"></i>
+                Денешен распоред
+            </h3>
+
+            <p>
+                Термини за денес - @DateTime.Today.ToString("dd/MM/yyyy")
+            </p>
+
+            @if (dnevniTermini.Any())
+            {
+                <div class="table-responsive">
+
+                    <table class="table table-striped table-bordered table-hover">
+
+                        <thead class="table-info">
+                            <tr>
+                                <th>Време</th>
+
+                                @if (tip == 1)
+                                {
+                                    <th>Пациент</th>
+                                }
+
+                                @if (tip == 2)
+                                {
+                                    <th>Доктор</th>
+                                }
+
+                                <th>Статус</th>
+                                <th>Забелешки</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var termin in dnevniTermini)
+                            {
+                                <tr>
+
+                                    <td>
+                                        @(termin.appointmenttime.Length >= 5
+                                        ? termin.appointmenttime.Substring(0, 5)
+                                        : termin.appointmenttime)
+                                    </td>
+
+                                    @if (tip == 1)
+                                    {
+                                        <td>
+                                            @termin.patient_first_name
+                                            @termin.patient_last_name
+                                        </td>
+                                    }
+
+                                    @if (tip == 2)
+                                    {
+                                        <td>
+                                            @termin.doctor_first_name
+                                            @termin.doctor_last_name
+                                        </td>
+                                    }
+
+                                    <td>
+                                        @termin.status
+                                    </td>
+
+                                    <td>
+                                        @termin.notes
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info mb-0">
+                    Денес немате закажани термини.
+                </div>
+            }
+
+        </div>
+    }
+
+
+    <div class="row g-4">
+
+    <div class="row g-4">
+
+        @if (tip == 0)
+        {
+            <div class="col-md-4">
+
+                <a asp-controller="Doctors"
+                   asp-action="Index"
+                   class="home-card">
+
+                    <div class="card-icon">
+                        <i class="bi bi-person-badge-fill"></i>
+                    </div>
+
+                    <h3>Доктори</h3>
+
+                    <p>
+                        Преглед и управување со доктори.
+                    </p>
+
+                </a>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <a asp-controller="Patients"
+                   asp-action="Index"
+                   class="home-card">
+
+                    <div class="card-icon">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+
+                    <h3>Пациенти</h3>
+
+                    <p>
+                        Преглед и управување со пациенти.
+                    </p>
+
+                </a>
+
+            </div>
+        }
+
+
+        <div class="col-md-4">
+
+            <a asp-controller="Appointments"
+               asp-action="Index"
+               class="home-card">
+
+                <div class="card-icon">
+                    <i class="bi bi-calendar-check-fill"></i>
+                </div>
+
+                <h3>Термини</h3>
+
+                <p>
+                    Преглед на закажаните термини.
+                </p>
+
+            </a>
+
+        </div>
+
+
+        @if (tip == 0)
+        {
+            <div class="col-md-4">
+
+                <a asp-controller="Status"
+                   asp-action="Index"
+                   class="home-card">
+
+                    <div class="card-icon">
+                        <i class="bi bi-list-check"></i>
+                    </div>
+
+                    <h3>Статус</h3>
+
+                    <p>
+                        Управување со статусите на термините.
+                    </p>
+
+                </a>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <a asp-controller="Tipovi_na_specijalizacija"
+                   asp-action="Index"
+                   class="home-card">
+
+                    <div class="card-icon">
+                        <i class="bi bi-hospital-fill"></i>
+                    </div>
+
+                    <h3>Специјализации</h3>
+
+                    <p>
+                        Управување со медицинските специјализации.
+                    </p>
+
+                </a>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <a asp-controller="Korisnik"
+                   asp-action="Lista"
+                   class="home-card">
+
+                    <div class="card-icon">
+                        <i class="bi bi-person-gear"></i>
+                    </div>
+
+                    <h3>Корисници</h3>
+
+                    <p>
+                        Управување со корисничките профили.
+                    </p>
+
+                </a>
+
+            </div>
+        }
+
+    </div>
+
 </div>

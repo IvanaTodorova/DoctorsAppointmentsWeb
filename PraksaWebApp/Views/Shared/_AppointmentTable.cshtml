@@ -3,21 +3,50 @@
 *@
 @model IEnumerable<Appointments>
 
-<table class="table table-striped table-bordered table-hover">
-    <thead class="table-info">
-    <tr>
-        <th>
-            <a href="@Url.Action("Index", new
-            {
-                sort = "date",
-                datum_od = ViewBag.DatumOd,
-                datum_do = ViewBag.DatumDo
-            })">
-                Датум
-            </a>
-        </th>
+<style>
+    /* ЗАКАЖАН - нежно жолта */
+    .status-scheduled td {
+        background-color: #fff9e6 !important;
+    }
 
-        <th>
+    /* ЗАВРШЕН - нежно зелена */
+    .status-completed td {
+        background-color: #edf8f0 !important;
+    }
+
+    /* ОТКАЖАН - нежно црвена */
+    .status-cancelled td {
+        background-color: #fff0f0 !important;
+    }
+
+    /* ВО ТЕК - нежно лилакова */
+    .status-vo-tek td {
+        background-color: #f7f1fb !important;
+    }
+</style>
+
+<table class="table table-bordered table-hover">
+
+    <thead class="table-info">
+        <tr>
+
+            <!-- АКЦИИ -->
+            <th>Акции</th>
+
+            <!-- ДАТУМ -->
+            <th>
+                <a href="@Url.Action("Index", new
+                   {
+                       sort = "date",
+                       datum_od = ViewBag.DatumOd,
+                       datum_do = ViewBag.DatumDo
+                   })">
+                    Датум
+                </a>
+            </th>
+
+            <!-- ВРЕМЕ -->
+            <th>
                 <a href="@Url.Action("Index", new
                    {
                        sort = "time",
@@ -26,89 +55,96 @@
                        vreme_od = Context.Request.Query["vreme_od"],
                        vreme_do = Context.Request.Query["vreme_do"]
                    })">
-                        Време
-                  </a>      
-        </th>
+                    Време
+                </a>
+            </th>
 
-        <th>
-            <a href="@Url.Action("Index", new
-            {
-                sort = "patient",
-                datum_od = ViewBag.DatumOd,
-                datum_do = ViewBag.DatumDo
-            })">
-                Пациент
-            </a>
-        </th>
+            <!-- ПАЦИЕНТ -->
+            <th>
+                <a href="@Url.Action("Index", new
+                   {
+                       sort = "patient",
+                       datum_od = ViewBag.DatumOd,
+                       datum_do = ViewBag.DatumDo
+                   })">
+                    Пациент
+                </a>
+            </th>
 
-        <th>
-            <a href="@Url.Action("Index", new
-            {
-                sort = "doctor",
-                datum_od = ViewBag.DatumOd,
-                datum_do = ViewBag.DatumDo
-            })">
-                Лекар
-            </a>
-        </th>
+            <!-- ЛЕКАР -->
+            <th>
+                <a href="@Url.Action("Index", new
+                   {
+                       sort = "doctor",
+                       datum_od = ViewBag.DatumOd,
+                       datum_do = ViewBag.DatumDo
+                   })">
+                    Лекар
+                </a>
+            </th>
 
-        <th>
-            <a href="@Url.Action("Index", new
-            {
-                sort = "status",
-                datum_od = ViewBag.DatumOd,
-                datum_do = ViewBag.DatumDo
-            })">
-                Статус
-            </a>
-        </th>
+            <!-- СТАТУС -->
+            <th>
+                <a href="@Url.Action("Index", new
+                   {
+                       sort = "status",
+                       datum_od = ViewBag.DatumOd,
+                       datum_do = ViewBag.DatumDo
+                   })">
+                    Статус
+                </a>
+            </th>
 
-        <th>Акции</th>
-    </tr>
-</thead>
+            <!-- ЗАБЕЛЕШКА -->
+            <th>Забелешка</th>
+
+            <!-- AUDIT КОЛОНИ -->
+            <th>Креирано на</th>
+            <th>Креирано од</th>
+            <th>Изменето на</th>
+            <th>Изменето од</th>
+            <th>Промени статус</th>
+
+        </tr>
+    </thead>
 
     <tbody>
+
         @foreach (var rez in Model)
         {
-            <tr>
-                <td>
-                    @rez.appointmentdate.ToString("dd.MM.yyyy")
-                </td>
+            var rowClass = rez.status switch
+            {
+                "ЗАКАЖАН" => "status-scheduled",
+                "ЗАВРШЕН" => "status-completed",
+                "ОТКАЖАН" => "status-cancelled",
+                "ВО ТЕК" => "status-vo-tek",
+                _ => ""
+            };
 
-                <td>
-                    @(rez.appointmenttime.Length >= 5
-                        ? rez.appointmenttime.Substring(0, 5)
-                        : rez.appointmenttime)
-                </td>
+            <tr class="@rowClass">
 
+                <!-- АКЦИИ -->
                 <td>
-                    @rez.patient_first_name @rez.patient_last_name
-                </td>
 
-                <td>
-                    @rez.doctor_first_name @rez.doctor_last_name
-                </td>
-
-                <td>
-                    @rez.status
-                </td>
-
-                <td>
+                    <!-- Измени -->
                     <button class="btn btn-warning btn-sm"
                             onclick="editAppointment(
-                                @(rez.id ?? 0),
-                                @(rez.doctor_id ?? 0),
-                                @(rez.patientid ?? 0),
-                                '@rez.appointmentdate.ToString("dd-MM-yyyy")',
-                                '@(rez.appointmenttime.Length >= 5 ? rez.appointmenttime.Substring(0, 5) : rez.appointmenttime)',
-                                @(rez.status_id ?? 0),
-                                '@(rez.notes ?? "")'
-                            )">
+                        @(rez.id ?? 0),
+                        @(rez.doctor_id ?? 0),
+                        @(rez.patientid ?? 0),
+                        '@rez.appointmentdate.ToString("yyyy-MM-dd")',
+                        '@(rez.appointmenttime.Length >= 5
+                                                            ? rez.appointmenttime.Substring(0, 5)
+                                                            : rez.appointmenttime)',
+                        @(rez.status_id ?? 0),
+                        '@(rez.notes ?? "")'
+                        )">
 
                         <i class="bi bi-pencil"></i>
 
                     </button>
 
+                    <!-- Избриши -->
                     <form asp-controller="Appointments"
                           asp-action="Delete"
                           method="post"
@@ -127,8 +163,92 @@
                         </button>
 
                     </form>
+
                 </td>
+
+                <!-- ДАТУМ -->
+                <td>
+                    @rez.appointmentdate.ToString("dd.MM.yyyy")
+                </td>
+
+                <!-- ВРЕМЕ -->
+                <td>
+                    @(rez.appointmenttime.Length >= 5
+                        ? rez.appointmenttime.Substring(0, 5)
+                        : rez.appointmenttime)
+                </td>
+
+                <!-- ПАЦИЕНТ -->
+                <td>
+                    @rez.patient_first_name @rez.patient_last_name
+                </td>
+
+                <!-- ЛЕКАР -->
+                <td>
+                    @rez.doctor_first_name @rez.doctor_last_name
+                </td>
+
+                <!-- СТАТУС -->
+                <td>
+                    @rez.status
+                </td>
+
+                <!-- ЗАБЕЛЕШКА -->
+                <td>
+                    @rez.notes
+                </td>
+
+                <!-- КРЕИРАНО НА -->
+                <td>
+                    @(rez.created_on.HasValue
+                        ? rez.created_on.Value.ToString("dd.MM.yyyy HH:mm")
+                        : "")
+                </td>
+
+                <!-- КРЕИРАНО ОД -->
+                <td>
+                    @rez.created_by
+                </td>
+
+                <!-- ИЗМЕНЕТО НА -->
+                <td>
+                    @(rez.modified_on.HasValue
+                        ? rez.modified_on.Value.ToString("dd.MM.yyyy HH:mm")
+                        : "")
+                </td>
+
+                <!-- ИЗМЕНЕТО ОД -->
+                <td>
+                    @(rez.modified_by)
+                </td>
+
+                <!-- ПРОМЕНИ СТАТУС -->
+                <td>
+                    @if (rez.status_id == 1)
+                    {
+                        <button type="button"
+                                class="btn btn-warning btn-sm"
+                                onclick="promeniStatusVoTek(@rez.id)">
+                            Започни
+                        </button>
+                    }
+                    else if (rez.status_id == 2)
+                    {
+                        <button type="button"
+                                class="btn btn-success btn-sm"
+                                onclick="promeniStatusVoZavrsen(@rez.id)">
+                            Заврши
+                        </button>
+                    }
+                    else
+                    {
+
+                    }
+                </td>
+
             </tr>
         }
+
     </tbody>
+
 </table>

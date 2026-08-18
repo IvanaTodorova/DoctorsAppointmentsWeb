@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
 using PraksaWebApp.Models;
 
 namespace PraksaWebApp.Controllers
 {
+    [Authorize]
     public class DoctorsController : Controller
     {
         private readonly HttpClient _httpClient;
@@ -21,6 +23,14 @@ namespace PraksaWebApp.Controllers
 
         public async Task<IActionResult> Index(int page = 1)
         {
+            var tipClaim = User.FindFirst("tip_korisnik")?.Value;
+
+            if (tipClaim != "0")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            // остатокот од кодот...
             if (HttpContext.Session.GetString("username") == null)
             {
                 return RedirectToAction("Index", "Korisnik");
@@ -70,11 +80,17 @@ namespace PraksaWebApp.Controllers
         [HttpPost]
         public async Task<IActionResult> Save(Doctor doctor)
         {
+            var tipClaim = User.FindFirst("tip_korisnik")?.Value;
+
+            if (tipClaim != "0")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             if (doctor.Specijalnost_id == null || doctor.Specijalnost_id == 0)
             {
                 return RedirectToAction("Index");
             }
-
 
             if (doctor.Id == null || doctor.Id == 0)
             {
@@ -91,14 +107,19 @@ namespace PraksaWebApp.Controllers
                 );
             }
 
-
             return RedirectToAction("Index");
         }
-
 
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
+            var tipClaim = User.FindFirst("tip_korisnik")?.Value;
+
+            if (tipClaim != "0")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             await _httpClient.DeleteAsync(
                 $"{_apiSettings.BaseUrl}Doctors?id={id}"
             );

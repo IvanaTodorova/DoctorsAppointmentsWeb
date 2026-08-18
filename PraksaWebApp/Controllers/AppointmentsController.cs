@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using System.Net.Http.Json;
 using PraksaWebApp.Models;
+using System.Net.Http.Json;
 
 namespace PraksaWebApp.Controllers
 {
+    [Authorize]
     public class AppointmentsController : Controller
     {
         private readonly HttpClient _httpClient;
@@ -34,7 +37,9 @@ namespace PraksaWebApp.Controllers
                 return RedirectToAction("Index", "Korisnik");
             }
 
-            var tip = HttpContext.Session.GetInt32("tip_na_korisnik");
+            var tipClaim = User.FindFirst("tip_korisnik")?.Value;
+            var tip = tipClaim != null ? int.Parse(tipClaim) : -1;
+
             var patientId = HttpContext.Session.GetInt32("patient_id");
             var doctorId = HttpContext.Session.GetInt32("doctor_id");
 
@@ -58,7 +63,6 @@ namespace PraksaWebApp.Controllers
                     await _httpClient.GetFromJsonAsync<List<Appointments>>(url)
                     ?? new List<Appointments>();
 
-
                 if (tip == 2 && patientId.HasValue)
                 {
                     termini = termini
@@ -73,62 +77,98 @@ namespace PraksaWebApp.Controllers
                         .ToList();
                 }
 
-                termini = termini.OrderBy(x => x.appointmentdate).ToList();
+                termini = termini
+                    .OrderBy(x => x.appointmentdate)
+                    .ToList();
 
                 if (sort == "date")
-                    termini = termini.OrderBy(x => x.appointmentdate).ToList();
-
+                {
+                    termini = termini
+                        .OrderBy(x => x.appointmentdate)
+                        .ToList();
+                }
                 else if (sort == "time")
+                {
                     termini = termini
                         .OrderBy(x => TimeSpan.Parse(x.appointmenttime))
                         .ToList();
-
+                }
                 else if (sort == "patient")
-                    termini = termini.OrderBy(x => x.patient_first_name).ToList();
-
+                {
+                    termini = termini
+                        .OrderBy(x => x.patient_first_name)
+                        .ToList();
+                }
                 else if (sort == "doctor")
-                    termini = termini.OrderBy(x => x.doctor_first_name).ToList();
-
+                {
+                    termini = termini
+                        .OrderBy(x => x.doctor_first_name)
+                        .ToList();
+                }
                 else if (sort == "status")
-                    termini = termini.OrderBy(x => x.status).ToList();
+                {
+                    termini = termini
+                        .OrderBy(x => x.status)
+                        .ToList();
+                }
 
                 if (vreme_od.HasValue)
                 {
                     termini = termini
-                        .Where(x => TimeSpan.TryParse(x.appointmenttime, out TimeSpan vreme)
-                                    && vreme >= vreme_od.Value)
+                        .Where(x =>
+                            TimeSpan.TryParse(
+                                x.appointmenttime,
+                                out TimeSpan vreme
+                            )
+                            && vreme >= vreme_od.Value)
                         .ToList();
                 }
 
                 if (vreme_do.HasValue)
                 {
                     termini = termini
-                        .Where(x => TimeSpan.TryParse(x.appointmenttime, out TimeSpan vreme)
-                                    && vreme <= vreme_do.Value)
+                        .Where(x =>
+                            TimeSpan.TryParse(
+                                x.appointmenttime,
+                                out TimeSpan vreme
+                            )
+                            && vreme <= vreme_do.Value)
                         .ToList();
                 }
 
                 if (!string.IsNullOrWhiteSpace(patient))
                 {
                     termini = termini
-                        .Where(x => (x.patient_first_name ?? "")
-                            .StartsWith(patient, StringComparison.OrdinalIgnoreCase))
+                        .Where(x =>
+                            (x.patient_first_name ?? "")
+                            .StartsWith(
+                                patient,
+                                StringComparison.OrdinalIgnoreCase
+                            ))
                         .ToList();
                 }
 
                 if (!string.IsNullOrWhiteSpace(doctor))
                 {
                     termini = termini
-                        .Where(x => (x.doctor_first_name ?? "")
-                            .StartsWith(doctor, StringComparison.OrdinalIgnoreCase))
+                        .Where(x =>
+                            (x.doctor_first_name ?? "")
+                            .StartsWith(
+                                doctor,
+                                StringComparison.OrdinalIgnoreCase
+                            ))
                         .ToList();
                 }
 
                 if (!string.IsNullOrWhiteSpace(status))
                 {
                     termini = termini
-                        .Where(x => (x.status ?? "")
-                            .Equals(status, StringComparison.OrdinalIgnoreCase))
+                        .Where(x =>
+                            (x.status ?? "")
+                            .Equals(
+                                status,
+                                StringComparison.OrdinalIgnoreCase
+                            ))
                         .ToList();
                 }
 
@@ -138,13 +178,15 @@ namespace PraksaWebApp.Controllers
                     {
                         termini = termini
                             .OrderBy(x => x.appointmentdate)
-                            .ThenBy(x => TimeSpan.Parse(x.appointmenttime))
+                            .ThenBy(x =>
+                                TimeSpan.Parse(x.appointmenttime))
                             .ToList();
                     }
                     else
                     {
                         termini = termini
-                            .OrderBy(x => TimeSpan.Parse(x.appointmenttime))
+                            .OrderBy(x =>
+                                TimeSpan.Parse(x.appointmenttime))
                             .ToList();
                     }
                 }
@@ -152,31 +194,64 @@ namespace PraksaWebApp.Controllers
                 List<Doctor> doktori =
                     await _httpClient.GetFromJsonAsync<List<Doctor>>(
                         _apiSettings.BaseUrl + "Doctors"
-                    ) ?? new List<Doctor>();
+                    )
+                    ?? new List<Doctor>();
 
                 List<Patient> pacienti =
                     await _httpClient.GetFromJsonAsync<List<Patient>>(
                         _apiSettings.BaseUrl + "Patients"
-                    ) ?? new List<Patient>();
+                    )
+                    ?? new List<Patient>();
 
+                if (tip == 1 && doctorId.HasValue)
+                {
+                    doktori = doktori
+                        .Where(x => x.Id == doctorId.Value)
+                        .ToList();
+                }
+
+                if (tip == 2 && patientId.HasValue)
+                {
+                    pacienti = pacienti
+                        .Where(x => x.id == patientId.Value)
+                        .ToList();
+                }
 
                 List<Status> statusi =
                     await _httpClient.GetFromJsonAsync<List<Status>>(
                         _apiSettings.BaseUrl + "Status"
-                    ) ?? new List<Status>();
+                    )
+                    ?? new List<Status>();
 
-                // Статистика според филтрираните термини
                 ViewBag.TotalAppointments = termini.Count;
 
                 ViewBag.ScheduledAppointments = termini.Count(x =>
-                    (x.status ?? "").Equals("ЗАКАЖАН", StringComparison.OrdinalIgnoreCase));
+                    (x.status ?? "")
+                    .Equals(
+                        "ЗАКАЖАН",
+                        StringComparison.OrdinalIgnoreCase
+                    ));
 
                 ViewBag.CompletedAppointments = termini.Count(x =>
-                    (x.status ?? "").Equals("ЗАВРШЕН", StringComparison.OrdinalIgnoreCase));
+                    (x.status ?? "")
+                    .Equals(
+                        "ЗАВРШЕН",
+                        StringComparison.OrdinalIgnoreCase
+                    ));
 
                 ViewBag.CancelledAppointments = termini.Count(x =>
-                    (x.status ?? "").Equals("ОТКАЖАН", StringComparison.OrdinalIgnoreCase));
+                    (x.status ?? "")
+                    .Equals(
+                        "ОТКАЖАН",
+                        StringComparison.OrdinalIgnoreCase
+                    ));
 
+                ViewBag.InProgressAppointments = termini.Count(x =>
+                    (x.status ?? "")
+                    .Equals(
+                        "ВО ТЕК",
+                        StringComparison.OrdinalIgnoreCase
+                    ));
 
                 int pageSize = 10;
 
@@ -192,65 +267,148 @@ namespace PraksaWebApp.Controllers
                 ViewBag.CurrentPage = page;
                 ViewBag.TotalPages = totalPages;
 
-                // Ги чуваме датумите за да останат во filter-от
-                ViewBag.DatumOd = datum_od?.ToString("yyyy-MM-dd");
-                ViewBag.DatumDo = datum_do?.ToString("yyyy-MM-dd");
+                ViewBag.DatumOd =
+                    datum_od?.ToString("yyyy-MM-dd");
+
+                ViewBag.DatumDo =
+                    datum_do?.ToString("yyyy-MM-dd");
+
                 ViewBag.Sort = sort;
 
-                ViewBag.VremeOd = vreme_od?.ToString(@"hh\:mm");
-                ViewBag.VremeDo = vreme_do?.ToString(@"hh\:mm");
+                ViewBag.VremeOd =
+                    vreme_od?.ToString(@"hh\:mm");
+
+                ViewBag.VremeDo =
+                    vreme_do?.ToString(@"hh\:mm");
+
                 ViewBag.Patient = patient;
                 ViewBag.Doctor = doctor;
                 ViewBag.StatusFilter = status;
 
-                AppointmentViewModel model = new AppointmentViewModel
-                {
-                    Appointments = terminiNaStrana,
-                    Doctors = doktori,
-                    Patients = pacienti,
-                    Status = statusi
-                };
+
+                AppointmentViewModel model =
+                    new AppointmentViewModel
+                    {
+                        Appointments = terminiNaStrana,
+                        Doctors = doktori,
+                        Patients = pacienti,
+                        Status = statusi
+                    };
 
                 return View(model);
-                }
-                 catch (Exception ex)
-                 {
-                 return Content(ex.Message);
-                }
-         }
+            }
+            catch (Exception ex)
+            {
+                return Content(ex.Message);
+            }
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> Save(Appointments appointment)
         {
-            TimeSpan newAppointmentTime = TimeSpan.Parse(appointment.appointmenttime);
-            TimeSpan appointmentEnd = TimeSpan.Zero;
-            var doctorAppointments = await _httpClient
-            .GetFromJsonAsync<List<Appointments>>(
-            $"{_apiSettings.BaseUrl}Appointments/GetDoctorAppointmentsForDate?doctor_id={appointment.doctor_id}&datum={appointment.appointmentdate:yyyy-MM-dd}"
-            ) ?? new List<Appointments>();
+            var username =
+                HttpContext.Session.GetString("username");
+
+            Appointments? oldAppointment = null;
+
+            if (appointment.id != 0)
+            {
+                oldAppointment =
+                    await _httpClient.GetFromJsonAsync<Appointments>(
+                        $"{_apiSettings.BaseUrl}Appointments/GetById?id={appointment.id}"
+                    );
+            }
+
+            bool dateChanged =
+                oldAppointment != null &&
+                oldAppointment.appointmentdate.Date !=
+                appointment.appointmentdate.Date;
+
+
+            TimeSpan newAppointmentTime =
+                TimeSpan.Parse(appointment.appointmenttime);
+
+            TimeSpan appointmentEnd =
+                TimeSpan.Zero;
+
+            if (appointment.id == 0 || dateChanged)
+            {
+
+                if (appointment.appointmentdate.Date <
+                    DateTime.Today)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message =
+                            "Не може да се избере датум кој е во минатото."
+                    });
+                }
+
+                if (appointment.appointmentdate.Date ==
+                    DateTime.Today)
+                {
+                    if (newAppointmentTime <
+                        DateTime.Now.TimeOfDay)
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            message =
+                                "Времето што го избравте веќе е поминато."
+                        });
+                    }
+                }
+            }
+
+            var doctorAppointments =
+                await _httpClient
+                    .GetFromJsonAsync<List<Appointments>>(
+                        $"{_apiSettings.BaseUrl}Appointments/GetDoctorAppointmentsForDate" +
+                        $"?doctor_id={appointment.doctor_id}" +
+                        $"&datum={appointment.appointmentdate:yyyy-MM-dd}"
+                    )
+                ?? new List<Appointments>();
 
             bool exists = doctorAppointments.Any(a =>
             {
-                TimeSpan oldAppointmentTime = TimeSpan.Parse(a.appointmenttime);
+                TimeSpan oldAppointmentTime =
+                    TimeSpan.Parse(a.appointmenttime);
 
-                 appointmentEnd = oldAppointmentTime.Add(
-                    TimeSpan.FromMinutes(30)
-                );
+                appointmentEnd =
+                    oldAppointmentTime.Add(
+                        TimeSpan.FromMinutes(30)
+                    );
 
-                return newAppointmentTime >= oldAppointmentTime &&
-                       newAppointmentTime < appointmentEnd &&
+                return newAppointmentTime >=
+                           oldAppointmentTime
+                       &&
+                       newAppointmentTime <
+                           appointmentEnd
+                       &&
                        a.id != appointment.id;
             });
 
             if (exists)
             {
-                TempData["Error"] = "Докторот веќе има закажано термин во тоа време! Следно слободно време е " + appointmentEnd.ToString();
-                return RedirectToAction("Index");
-            }
+                return Json(new
+                {
+                    success = false,
 
+                    message =
+                        "Докторот веќе има закажано термин во тоа време! " +
+                        "Следно слободно време е " +
+                        appointmentEnd.ToString(@"hh\:mm")
+                });
+            }
 
             if (appointment.id == 0)
             {
+
+                appointment.created_by =
+                    username;
+
                 await _httpClient.PostAsJsonAsync(
                     _apiSettings.BaseUrl + "Appointments",
                     appointment
@@ -258,16 +416,75 @@ namespace PraksaWebApp.Controllers
             }
             else
             {
+
+                appointment.modified_by =
+                    username;
+
                 await _httpClient.PutAsJsonAsync(
                     $"{_apiSettings.BaseUrl}Appointments?id={appointment.id}",
                     appointment
                 );
             }
 
-
-            return RedirectToAction("Index");
+            return Json(new
+            {
+                success = true
+            });
         }
 
+        [HttpPut]
+        public async Task<IActionResult> PromeniStatusVoTek(int id, string modified_by)
+        {
+            var response = await _httpClient.PutAsync(
+                $"{_apiSettings.BaseUrl}Appointments/PromeniStatusVoTek" +
+                $"?id={id}&modified_by={Uri.EscapeDataString(modified_by)}",
+                null
+            );
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+
+                return BadRequest(new
+                {
+                    success = false,
+                    message = error
+                });
+            }
+
+            return Ok(new
+            {
+                success = true
+            });
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> PromeniStatusVoZavrsen(int id, string modified_by, string? notes)
+        {
+            var url =
+                $"{_apiSettings.BaseUrl}Appointments/PromeniStatusVoZavrsen" +
+                $"?id={id}" +
+                $"&modified_by={Uri.EscapeDataString(modified_by)}" +
+                $"&notes={Uri.EscapeDataString(notes ?? "")}";
+
+            var response = await _httpClient.PutAsync(url, null);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+
+                return BadRequest(new
+                {
+                    success = false,
+                    message = error
+                });
+            }
+
+            return Ok(new
+            {
+                success = true
+            });
+        }
 
         [HttpPost]
         public async Task<IActionResult> Delete(int id)

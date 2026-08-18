@@ -25,51 +25,185 @@
     }
 </style>
 <script>
-     function resetAppointmentForm() {
+    function resetAppointmentForm() {
 
-         document.querySelector('input[name="id"]').value = 0;
+        document.querySelector('input[name="id"]').value = 0;
 
-         document.querySelector('select[name="doctor_id"]').value = "";
+        const doctor = document.querySelector('[name="doctor_id"]');
+        if (doctor && doctor.tagName === "SELECT") {
+            doctor.value = "";
+        }
 
-         document.querySelector('select[name="patientid"]').value = "";
+        const patient = document.querySelector('[name="patientid"]');
+        if (patient && patient.tagName === "SELECT") {
+            patient.value = "";
+        }
 
-         document.querySelector('input[name="appointmentdate"]').value = "";
+        const dateInput = document.querySelector('input[name="appointmentdate"]');
 
-         document.querySelector('input[name="appointmenttime"]').value = "";
+        dateInput.value = "";
 
-         document.querySelector('select[name="status_id"]').value = "";
+        dateInput.setAttribute(
+            "min",
+            "@DateTime.Today.ToString("yyyy-MM-dd")"
+        );
 
-         document.querySelector('textarea[name="notes"]').value = "";
+        dateInput.readOnly = false;
+        document.querySelector('input[name="appointmenttime"]').value = "";
 
-         document.querySelector(".modal-title").innerText = "Додади термин";
-     }
+        document.querySelector('select[name="status_id"]').value = "";
 
-     function editAppointment(id, doctorId, patientId, date, time, statusId, notes) {
+        document.querySelector('textarea[name="notes"]').value = "";
 
-         document.querySelector('input[name="id"]').value = id;
-
-         document.querySelector('select[name="doctor_id"]').value = doctorId;
-
-         document.querySelector('select[name="patientid"]').value = patientId;
-
-         document.querySelector('input[name="appointmentdate"]').value = date;
-
-         document.querySelector('input[name="appointmenttime"]').value = time;
-
-         document.querySelector('select[name="status_id"]').value = statusId;
-
-         document.querySelector('textarea[name="notes"]').value = notes;
-
-         document.querySelector(".modal-title").innerText = "Измени термин";
-
-
-         var modal = new bootstrap.Modal(
-             document.getElementById("addModal")
-         );
-
-         modal.show();
+        document.querySelector(".modal-title").innerText = "Додади термин";
     }
-    
+
+    function editAppointment(id, doctorId, patientId, date, time, statusId, notes) {
+
+        document.querySelector('input[name="id"]').value = id;
+
+        document.querySelector('[name="doctor_id"]').value = doctorId;
+
+        document.querySelector('[name="patientid"]').value = patientId;
+
+        const dateInput = document.querySelector('input[name="appointmentdate"]');
+
+        dateInput.value = date;
+
+        // При изменување дозволи да се прикаже и стар датум
+        dateInput.removeAttribute("min");
+
+        dateInput.readOnly = false;
+
+        document.querySelector('input[name="appointmenttime"]').value = time;
+
+        const status = document.querySelector('select[name="status_id"]');
+
+        if (status) {
+            status.value = String(statusId);
+        }
+
+        document.querySelector('textarea[name="notes"]').value = notes || "";
+
+        document.querySelector(".modal-title").innerText = "Измени термин";
+
+        var modal = new bootstrap.Modal(
+            document.getElementById("addModal")
+        );
+
+        modal.show();
+    }
+function promeniStatusVoTek(id) {
+
+    const modifiedBy = "@Context.Session.GetString("username")";
+
+    fetch(`/Appointments/PromeniStatusVoTek?id=${id}&modified_by=${encodeURIComponent(modifiedBy)}`, {
+        method: "PUT"
+    })
+    .then(response => {
+        return response.text();
+    })
+    .then(data => {
+        const params = new URLSearchParams(window.location.search);
+
+        // Повторно вчитај ја табелата
+        fetch('/Appointments/Index?' + params.toString())
+            .then(response => response.text())
+            .then(html => {
+
+                const parser = new DOMParser();
+                const page = parser.parseFromString(html, "text/html");
+
+                const novaTabela = page.querySelector("#appointmentTable");
+
+                if (novaTabela) {
+                    document.getElementById("appointmentTable").innerHTML =
+                        novaTabela.innerHTML;
+                }
+            });
+    })
+    .catch(error => {
+        console.error(error);
+    });
+}
+
+   let terminZaZavrsuvanje = null;
+
+function promeniStatusVoZavrsen(id) {
+
+    terminZaZavrsuvanje = id;
+
+    // Исчисти го полето
+    document.getElementById("notesForCompletion").value = "";
+
+    // Отвори Bootstrap modal
+    const modal = new bootstrap.Modal(
+        document.getElementById("finishAppointmentModal")
+    );
+
+    modal.show();
+}
+
+function potvrdiZavrsuvanje() {
+
+    const notes =
+        document.getElementById("notesForCompletion").value;
+
+    const modifiedBy =
+        "@Context.Session.GetString("username")";
+
+    fetch(`/Appointments/PromeniStatusVoZavrsen?id=${terminZaZavrsuvanje}` +
+        `&modified_by=${encodeURIComponent(modifiedBy)}` +
+        `&notes=${encodeURIComponent(notes)}`, {
+            method: "PUT"
+        })
+        .then(response => {
+
+            if (!response.ok) {
+                throw new Error("Грешка при промена на статусот.");
+            }
+
+            return response;
+        })
+        .then(() => {
+
+            // Затвори го modal-от
+            const modalElement =
+                document.getElementById("finishAppointmentModal");
+
+            const modal =
+                bootstrap.Modal.getInstance(modalElement);
+
+            if (modal) {
+                modal.hide();
+            }
+
+            // Земи ги моменталните филтри од URL
+            const params =
+                new URLSearchParams(window.location.search);
+
+            // Повторно вчитај ја табелата
+            fetch('/Appointments/Index?' + params.toString())
+                .then(response => response.text())
+                .then(html => {
+
+                    const parser = new DOMParser();
+                    const page =
+                        parser.parseFromString(html, "text/html");
+
+                    const novaTabela =
+                        page.querySelector("#appointmentTable");
+
+                    if (novaTabela) {
+                        document.getElementById("appointmentTable").innerHTML =
+                            novaTabela.innerHTML;
+                    }
+                });
+        })
+        .catch(error => {
+            alert(error.message);
+        });
+}
 </script>
 
     <h1>@ViewData["Title"]</h1>
@@ -637,15 +771,13 @@
 
             </div>
 
-            <form asp-action="Save" method="post">
+            <form asp-action="Save" method="post" id="appointmentForm">
 
                 <div class="modal-body">
-
 
                     <input type="hidden"
                            name="id"
                            value="0" />
-
 
                     <div class="mb-3">
 
@@ -653,38 +785,52 @@
                             Доктор
                         </label>
 
+                        @if (Context.Session.GetInt32("tip_na_korisnik") == 1)
+                        {
+                            var doktor = Model.Doctors.FirstOrDefault();
 
-                        <select name="doctor_id"
-                                class="form-control"
-                                required
-                                oninvalid="event.preventDefault();
-                            this.classList.add('is-invalid');
-                            document.getElementById('doctorError').style.display='block' ;"
-                                onchange="this.classList.remove('is-invalid');
-                            document.getElementById('doctorError').style.display = 'none';">
+                            <input type="hidden"
+                                   name="doctor_id"
+                                   value="@doktor?.Id" />
 
-                            <option value="">
-                                Избери доктор
-                            </option>
+                            <input type="text"
+                                   class="form-control"
+                                   value="@doktor?.First_name @doktor?.Last_name"
+                                   readonly />
+                        }
+                        else
+                        {
+                            <select name="doctor_id"
+                                    class="form-control"
+                                    required
+                                    oninvalid="event.preventDefault();
+                                this.classList.add('is-invalid');
+                                document.getElementById('doctorError').style.display='block';"
+                                    onchange="this.classList.remove('is-invalid');
+                                document.getElementById('doctorError').style.display='none';">
 
-                            @foreach (var doktor in Model.Doctors)
-                            {
-                                <option value="@doktor.Id">
-                                    @doktor.First_name @doktor.Last_name
+                                <option value="">
+                                    Избери доктор
                                 </option>
-                            }
 
-                        </select>
+                                @foreach (var doktor in Model.Doctors)
+                                {
+                                    <option value="@doktor.Id">
+                                        @doktor.First_name @doktor.Last_name
+                                    </option>
+                                }
+
+                            </select>
+                        }
 
                         <span id="doctorError"
                               class="text-danger"
                               style="display: none;">
-
                             Полето е задолжително
-
                         </span>
 
                     </div>
+
 
                     <div class="mb-3">
 
@@ -692,39 +838,51 @@
                             Пациент
                         </label>
 
+                        @if (Context.Session.GetInt32("tip_na_korisnik") == 2)
+                        {
+                            var pacient = Model.Patients.FirstOrDefault();
 
-                        <select name="patientid"
-                                class="form-control"
-                                required
-                                oninvalid="event.preventDefault();
-                            this.classList.add('is-invalid');
-                            document.getElementById('patientError').style.display='block' ;"
-                                onchange="this.classList.remove('is-invalid');
-                            document.getElementById('patientError').style.display = 'none';">
+                            <input type="hidden"
+                                   name="patientid"
+                                   value="@pacient?.id" />
 
-                            <option value="">
-                                Избери пациент
-                            </option>
+                            <input type="text"
+                                   class="form-control"
+                                   value="@pacient?.first_name @pacient?.last_name"
+                                   readonly />
+                        }
+                        else
+                        {
+                            <select name="patientid"
+                                    class="form-control"
+                                    required
+                                    oninvalid="event.preventDefault();
+                                this.classList.add('is-invalid');
+                                document.getElementById('patientError').style.display='block';"
+                                    onchange="this.classList.remove('is-invalid');
+                                document.getElementById('patientError').style.display='none';">
 
-                            @foreach (var pacient in Model.Patients)
-                            {
-                                <option value="@pacient.id">
-                                    @pacient.first_name @pacient.last_name
+                                <option value="">
+                                    Избери пациент
                                 </option>
-                            }
 
-                        </select>
+                                @foreach (var pacient in Model.Patients)
+                                {
+                                    <option value="@pacient.id">
+                                        @pacient.first_name @pacient.last_name
+                                    </option>
+                                }
+
+                            </select>
+                        }
 
                         <span id="patientError"
                               class="text-danger"
                               style="display: none;">
-
                             Полето е задолжително
-
                         </span>
 
                     </div>
-
 
                     <div class="mb-3">
 
@@ -907,13 +1065,26 @@
                 </small>
             </div>
 
+            <div>
+                <div class="fw-bold fs-5 counter"
+                     style="color: #8e5aa8;"
+                     data-target="@ViewBag.InProgressAppointments">
+                    0
+                </div>
+                <small class="text-muted">
+                    Во тек
+                </small>
+            </div>
+
         </div>
 
     </div>
 </div>
 
-<partial name="~/Views/Shared/_AppointmentTable.cshtml"
-         model="Model.Appointments" />
+<div id="appointmentTable">
+    <partial name="~/Views/Shared/_AppointmentTable.cshtml"
+             model="Model.Appointments" />
+</div>
 
 <nav>
     <ul class="pagination justify-content-center">
@@ -942,6 +1113,75 @@
         }
     </ul>
 </nav>
+
+<!-- Modal за завршување на термин -->
+<div class="modal fade"
+     id="finishAppointmentModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Заврши преглед
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="mb-3">
+
+                    <label for="notesForCompletion"
+                           class="form-label">
+                        Забелешка
+                    </label>
+
+                    <textarea id="notesForCompletion"
+                              class="form-control"
+                              rows="4"
+                              placeholder="Внесете забелешка (опционално)..."></textarea>
+
+                    <small class="text-muted">
+                        Полето не е задолжително.
+                    </small>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Откажи
+                </button>
+
+                <button type="button"
+                        class="btn btn-success"
+                        onclick="potvrdiZavrsuvanje()">
+                    Заврши
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
 @section Scripts {
     <script>
         flatpickr('#datumOd', {
@@ -982,6 +1222,56 @@
             };
 
             updateCounter();
+        });
+
+        document.getElementById("appointmentForm").addEventListener("submit", function(e) {
+
+            e.preventDefault();
+
+            const form = this;
+            const formData = new FormData(form);
+
+            fetch('/Appointments/Save', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+
+                    if (data.success) {
+
+                        // Затвори го modal-от
+                        const modalElement = document.getElementById("addModal");
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+
+                        if (modal) {
+                            modal.hide();
+                        }
+
+                        // Земи ги моменталните филтри од URL
+                        const params = new URLSearchParams(window.location.search);
+
+                        // Повторно вчитај ја само табелата
+                        fetch('/Appointments/Index?' + params.toString())
+                            .then(response => response.text())
+                            .then(html => {
+
+                                const parser = new DOMParser();
+                                const page = parser.parseFromString(html, "text/html");
+
+                                const novaTabela = page.querySelector("#appointmentTable");
+
+                                if (novaTabela) {
+                                    document.getElementById("appointmentTable").innerHTML =
+                                        novaTabela.innerHTML;
+                                }
+                            });
+                    }
+                    else {
+
+                        alert(data.message);
+                    }
+                });
         });
     </script>
 }

@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using System.Net.Http.Json;
 using PraksaWebApp.Models;
+using System.Net.Http.Json;
+using System.Security.Claims;
 
 namespace PraksaWebApp.Controllers
 {
@@ -152,8 +155,11 @@ namespace PraksaWebApp.Controllers
         }
 
         [HttpPost]
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
+            await HttpContext.SignOutAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme);
+
             HttpContext.Session.Clear();
 
             return RedirectToAction("Index");
@@ -210,9 +216,64 @@ namespace PraksaWebApp.Controllers
                 return View();
             }
 
+            var claims = new List<Claim>
+            {
+                new Claim("tip_korisnik", korisnik.tip_na_korisnik.ToString())
+            };
+
+            var claimsIdentity = new ClaimsIdentity(
+                claims,
+                CookieAuthenticationDefaults.AuthenticationScheme);
+
+            var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                claimsPrincipal);
+
+
             HttpContext.Session.SetString(
                 "username",
                 korisnik.username);
+
+            if (korisnik.tip_na_korisnik == 1 && korisnik.doctor_id.HasValue)
+            {
+                var doctors = await _httpClient.GetFromJsonAsync<List<Doctor>>(
+                    _apiSettings.BaseUrl + "Doctors"
+                ) ?? new List<Doctor>();
+
+                var doctor = doctors.FirstOrDefault(
+                    x => x.Id == korisnik.doctor_id.Value
+                );
+
+                if (doctor != null)
+                {
+                    HttpContext.Session.SetString(
+                        "ime_prezime",
+                        $"{doctor.First_name} {doctor.Last_name}"
+                    );
+                }
+            }
+
+            if (korisnik.tip_na_korisnik == 2 && korisnik.patient_id.HasValue)
+            {
+                var patients = await _httpClient.GetFromJsonAsync<List<Patient>>(
+                    _apiSettings.BaseUrl + "Patients"
+                ) ?? new List<Patient>();
+
+                var patient = patients.FirstOrDefault(
+                    x => x.id == korisnik.patient_id.Value
+                );
+
+                if (patient != null)
+                {
+                    HttpContext.Session.SetString(
+                        "ime_prezime",
+                        $"{patient.first_name} {patient.last_name}"
+                    );
+                }
+            }
+
 
             HttpContext.Session.SetInt32(
                 "tip_na_korisnik",

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using PraksaWebApp.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,9 +12,14 @@ builder.Services.Configure<ApiSettings>(
     builder.Configuration.GetSection("ApiSettings")
 );
 
+
+builder.Services.AddAuthentication(
+    CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie();
+
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
-
-
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -30,6 +36,7 @@ app.UseRouting();
 
 app.UseSession();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
@@ -37,3 +44,4 @@ app.MapControllerRoute(
     pattern: "{controller=Korisnik}/{action=Index}/{id?}");
 
 app.Run();
+

@@ -1,51 +1,596 @@
 ﻿@{
+    Layout = null;
     ViewData["Title"] = "Најава";
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-5">
+<!DOCTYPE html>
+<html lang="mk">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-            <div class="card shadow">
-                <div class="card-body">
+    <title>Најава - Медицински систем</title>
 
-                    <h2 class="text-center mb-4">Најава</h2>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 
-                    @if (ViewBag.Error != null)
-                    {
-                        <div class="alert alert-danger">
-                            @ViewBag.Error
-                        </div>
+    <style>
+            * {
+                box-sizing: border-box;
+            }
+
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+                font-family: Arial, Helvetica, sans-serif;
+            }
+
+            body {
+                background-color: #ffffff;
+            }
+
+            .login-page {
+                min-height: 100vh;
+                display: flex;
+            }
+
+            /* =========================
+                       LEFT SIDE
+                       ========================= */
+
+            .login-left {
+                width: 42%;
+                background-color: #ffffff;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 50px 70px;
+            }
+
+            .logo-area {
+                width: 100%;
+                margin-bottom: 80px;
+            }
+
+            .logo {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .logo-icon {
+                width: 52px;
+                height: 52px;
+                background-color: #1689d8;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 28px;
+            }
+
+            .logo-text {
+                color: #173b56;
+                font-size: 25px;
+                font-weight: 700;
+                line-height: 1.1;
+            }
+
+            .logo-subtitle {
+                color: #78909c;
+                font-size: 11px;
+                letter-spacing: 2px;
+                margin-top: 3px;
+            }
+
+            .login-box {
+                width: 100%;
+                max-width: 390px;
+            }
+
+                .login-box h1 {
+                    font-size: 28px;
+                    color: #173b56;
+                    font-weight: 600;
+                    margin-bottom: 35px;
+                }
+
+            .form-group {
+                margin-bottom: 22px;
+            }
+
+                .form-group label {
+                    display: block;
+                    color: #173b56;
+                    font-size: 14px;
+                    font-weight: 600;
+                    margin-bottom: 9px;
+                }
+
+            .input-wrapper {
+                position: relative;
+            }
+
+                .input-wrapper i {
+                    position: absolute;
+                    left: 16px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: #8aa3b5;
+                    font-size: 18px;
+                }
+
+            .login-input {
+                width: 100%;
+                height: 58px;
+                border: none;
+                border-radius: 10px;
+                background-color: #f1f5f8;
+                padding: 0 18px 0 48px;
+                font-size: 15px;
+                color: #173b56;
+                outline: none;
+                transition: 0.2s;
+            }
+
+                .login-input:focus {
+                    background-color: #ffffff;
+                    box-shadow: 0 0 0 2px #1689d8;
+                }
+
+                .login-input::placeholder {
+                    color: #a3b0b9;
+                }
+
+            .login-button {
+                width: 100%;
+                height: 56px;
+                border: none;
+                border-radius: 9px;
+                background-color: #1689d8;
+                color: white;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                margin-top: 10px;
+                transition: 0.2s;
+            }
+
+                .login-button:hover {
+                    background-color: #0878c5;
+                }
+
+            .error-message {
+                background-color: #fff0f0;
+                border: 1px solid #f2caca;
+                color: #c0392b;
+                border-radius: 8px;
+                padding: 12px 15px;
+                margin-bottom: 22px;
+                font-size: 14px;
+            }
+
+
+            /* =========================
+                       RIGHT SIDE
+                       ========================= */
+
+            .login-right {
+                width: 58%;
+                min-height: 100vh;
+                background: linear-gradient( 135deg, #dff5ff 0%, #b8e5f5 100% );
+                position: relative;
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 50px;
+            }
+
+            .right-content {
+                width: 100%;
+                max-width: 850px;
+                text-align: center;
+                position: relative;
+                z-index: 2;
+            }
+
+                .right-content h2 {
+                    color: #173b56;
+                    font-size: 32px;
+                    font-weight: 700;
+                    margin-bottom: 15px;
+                }
+
+                .right-content p {
+                    color: #526b7d;
+                    font-size: 17px;
+                    line-height: 1.6;
+                    max-width: 650px;
+                    margin: 0 auto 35px;
+                }
+
+            /* Medical illustration */
+
+            .medical-illustration {
+                position: relative;
+                width: 100%;
+                max-width: 700px;
+                height: 430px;
+                margin: 0 auto;
+            }
+
+            .monitor {
+                position: absolute;
+                width: 430px;
+                height: 270px;
+                background: #ffffff;
+                border: 10px solid #8cc5dc;
+                border-radius: 18px;
+                transform: rotate(-8deg);
+                left: 120px;
+                top: 55px;
+                box-shadow: 0 15px 30px rgba(30, 90, 120, 0.15);
+            }
+
+            .monitor-screen {
+                width: 100%;
+                height: 100%;
+                background-color: #edfaff;
+                padding: 25px;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .monitor-header {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+
+                .monitor-header span {
+                    height: 10px;
+                    border-radius: 5px;
+                    background-color: #8cc5dc;
+                }
+
+                    .monitor-header span:nth-child(1) {
+                        width: 80px;
                     }
 
-                    <form asp-controller="Korisnik" asp-action="Index" method="post">
+                    .monitor-header span:nth-child(2) {
+                        width: 50px;
+                    }
+
+                    .monitor-header span:nth-child(3) {
+                        width: 70px;
+                    }
+
+            .calendar-grid {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 7px;
+            }
+
+            .calendar-cell {
+                height: 42px;
+                border: 1px solid #a9d8e8;
+                background-color: white;
+                border-radius: 4px;
+            }
+
+                .calendar-cell.active {
+                    background-color: #ef6692;
+                    border-color: #ef6692;
+                }
+
+                .calendar-cell.green {
+                    background-color: #8dcc62;
+                    border-color: #8dcc62;
+                }
+
+            .stand {
+                position: absolute;
+                width: 180px;
+                height: 35px;
+                background-color: #91c9dc;
+                bottom: 55px;
+                left: 250px;
+                transform: rotate(-8deg);
+                border-radius: 10px;
+            }
+
+            .heart {
+                position: absolute;
+                right: 40px;
+                bottom: 70px;
+                color: #e6537d;
+                font-size: 95px;
+                transform: rotate(-10deg);
+                filter: drop-shadow( 0 10px 10px rgba(180, 60, 90, 0.15) );
+            }
+
+            .cross {
+                position: absolute;
+                left: 55px;
+                bottom: 85px;
+                width: 90px;
+                height: 90px;
+                background-color: white;
+                border-radius: 50%;
+                box-shadow: 0 10px 25px rgba(30, 90, 120, 0.12);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+                .cross i {
+                    color: #1689d8;
+                    font-size: 48px;
+                }
+
+            .pulse {
+                position: absolute;
+                left: 120px;
+                bottom: 20px;
+                font-size: 65px;
+                color: #1689d8;
+            }
+
+            .decoration-one {
+                position: absolute;
+                width: 250px;
+                height: 250px;
+                border-radius: 50%;
+                background-color: rgba(255,255,255,0.20);
+                top: -80px;
+                right: -60px;
+            }
+
+            .decoration-two {
+                position: absolute;
+                width: 180px;
+                height: 180px;
+                border-radius: 50%;
+                background-color: rgba(255,255,255,0.18);
+                bottom: -60px;
+                left: -50px;
+            }
 
 
-                        <div class="mb-3">
-                            <label class="form-label">Username</label>
-                            <input type="text"
-                                   name="username"
-                                   class="form-control"
-                                   required />
+            /* =========================
+                       RESPONSIVE
+                       ========================= */
+
+            @@media (max-width: 900px) {
+
+                .login-page {
+                    flex-direction: column;
+                }
+
+                .login-left {
+                    width: 100%;
+                    min-height: 100vh;
+                    padding: 40px 25px;
+                }
+
+                .login-right {
+                    display: none;
+                }
+
+                .logo-area {
+                    margin-bottom: 50px;
+                }
+
+                .login-box {
+                    max-width: 450px;
+                }
+            }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-page">
+
+        <!-- LEFT SIDE -->
+        <div class="login-left">
+
+            <div class="logo-area">
+
+                <div class="logo">
+
+                    <div class="logo-icon">
+                        <i class="bi bi-heart-pulse-fill"></i>
+                    </div>
+
+                    <div>
+                        <div class="logo-text">
+                            MEDICAL SYSTEM
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Password</label>
-                            <input type="password"
-                                   name="password"
-                                   class="form-control"
-                                   required />
+                        <div class="logo-subtitle">
+                            HEALTHCARE MANAGEMENT
                         </div>
-
-                        <button type="submit" class="btn btn-primary w-100">
-                            Најави се
-                        </button>
-
-                    </form>
+                    </div>
 
                 </div>
+
+            </div>
+
+
+            <div class="login-box">
+
+                <h1>Најава во системот</h1>
+
+                @if (ViewBag.Error != null)
+                {
+                    <div class="error-message">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        @ViewBag.Error
+                    </div>
+                }
+
+                <form asp-controller="Korisnik"
+                      asp-action="Index"
+                      method="post">
+
+                    <div class="form-group">
+
+                        <label for="username">
+                            Корисник
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="bi bi-person"></i>
+
+                            <input type="text"
+                                   id="username"
+                                   name="username"
+                                   class="login-input"
+                                   placeholder="Внесете корисничко име"
+                                   autocomplete="username"
+                                   required />
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="password">
+                            Лозинка
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="bi bi-lock"></i>
+
+                            <input type="password"
+                                   id="password"
+                                   name="password"
+                                   class="login-input"
+                                   placeholder="Внесете лозинка"
+                                   autocomplete="current-password"
+                                   required />
+
+                        </div>
+
+                    </div>
+
+
+                    <button type="submit"
+                            class="login-button">
+
+                        Најави се
+
+                    </button>
+
+                </form>
+
             </div>
 
         </div>
+
+
+        <!-- RIGHT SIDE -->
+        <div class="login-right">
+
+            <div class="decoration-one"></div>
+            <div class="decoration-two"></div>
+
+            <div class="right-content">
+
+                <h2>
+                    Медицински систем
+                </h2>
+
+                <p>
+                    Управување со пациенти, доктори и медицински термини
+                    на едно место.
+                </p>
+
+
+                <div class="medical-illustration">
+
+                    <!-- Monitor -->
+                    <div class="monitor">
+
+                        <div class="monitor-screen">
+
+                            <div class="monitor-header">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+
+                            <div class="calendar-grid">
+
+                                <div class="calendar-cell"></div>
+                                <div class="calendar-cell"></div>
+                                <div class="calendar-cell active"></div>
+                                <div class="calendar-cell"></div>
+                                <div class="calendar-cell"></div>
+
+                                <div class="calendar-cell"></div>
+                                <div class="calendar-cell green"></div>
+                                <div class="calendar-cell"></div>
+                                <div class="calendar-cell"></div>
+                                <div class="calendar-cell"></div>
+
+                                <div class="calendar-cell"></div>
+                                <div class="calendar-cell"></div>
+                                <div class="calendar-cell"></div>
+                                <div class="calendar-cell active"></div>
+                                <div class="calendar-cell"></div>
+
+                                <div class="calendar-cell"></div>
+                                <div class="calendar-cell"></div>
+                                <div class="calendar-cell green"></div>
+                                <div class="calendar-cell"></div>
+                                <div class="calendar-cell"></div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Stand -->
+                    <div class="stand"></div>
+
+
+                    <!-- Heart -->
+                    <div class="heart">
+                        <i class="bi bi-heart-pulse-fill"></i>
+                    </div>
+
+
+                    <!-- Medical cross -->
+                    <div class="cross">
+                        <i class="bi bi-plus-circle-fill"></i>
+                    </div>
+
+
+                    <!-- Pulse -->
+                    <div class="pulse">
+                        <i class="bi bi-activity"></i>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
-</div>
+
+</body>
+</html>

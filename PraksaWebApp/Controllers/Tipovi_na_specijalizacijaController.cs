@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
 using PraksaWebApp.Models;
 
 namespace PraksaWebApp.Controllers
 {
+    [Authorize]
     public class Tipovi_na_specijalizacijaController : Controller
     {
         private readonly HttpClient _httpClient;
@@ -18,9 +20,15 @@ namespace PraksaWebApp.Controllers
             _apiSettings = apiSettings.Value;
         }
 
-
         public async Task<IActionResult> Index()
         {
+            var tipClaim = User.FindFirst("tip_korisnik")?.Value;
+
+            if (tipClaim != "0")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             if (HttpContext.Session.GetString("username") == null)
             {
                 return RedirectToAction("Index", "Korisnik");
@@ -34,10 +42,17 @@ namespace PraksaWebApp.Controllers
             return View(specijalizacija);
         }
 
-
         [HttpPost]
-        public async Task<IActionResult> Save(Tipovi_na_specijalizacija tns)
+        public async Task<IActionResult> Save(
+            Tipovi_na_specijalizacija tns)
         {
+            var tipClaim = User.FindFirst("tip_korisnik")?.Value;
+
+            if (tipClaim != "0")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             if (tns.id == 0)
             {
                 await _httpClient.PostAsJsonAsync(
@@ -56,10 +71,16 @@ namespace PraksaWebApp.Controllers
             return RedirectToAction("Index");
         }
 
-
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
+            var tipClaim = User.FindFirst("tip_korisnik")?.Value;
+
+            if (tipClaim != "0")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             await _httpClient.DeleteAsync(
                 $"{_apiSettings.BaseUrl}Tipovi_Na_Specijalizacija?id={id}"
             );
