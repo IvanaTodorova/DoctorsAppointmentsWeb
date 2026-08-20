@@ -201,7 +201,7 @@ function potvrdiZavrsuvanje() {
                 });
         })
         .catch(error => {
-            alert(error.message);
+            console.error(error);
         });
 }
 </script>
@@ -301,6 +301,14 @@ function potvrdiZavrsuvanje() {
         Додади
 
     </button>
+
+     <a asp-controller="Appointments"
+           asp-action="ExportExcel"
+           class="btn btn-success">
+
+            Excel табела
+
+        </a>
 
 </div>
 
@@ -744,6 +752,11 @@ function potvrdiZavrsuvanje() {
 
 </div>
 
+<div id="errorMessage"
+     class="alert alert-danger"
+     style="display: none;">
+</div>
+
 @if (TempData["Error"] != null)
 {
     <div class="alert alert-danger">
@@ -1000,7 +1013,6 @@ function potvrdiZavrsuvanje() {
 
                     </button>
 
-
                     <button type="button"
                             class="btn btn-secondary"
                             data-bs-dismiss="modal">
@@ -1008,7 +1020,6 @@ function potvrdiZavrsuvanje() {
                         Откажи
 
                     </button>
-
 
                 </div>
 
@@ -1023,7 +1034,7 @@ function potvrdiZavrsuvanje() {
     <div class="border rounded-3 shadow-sm px-4 py-2"
          style="width: 70%; background-color: #f8f9fa;">
 
-        <div class="d-flex justify-content-around text-center">
+        <div id="appointmentStatistics" class="d-flex justify-content-around text-center">
 
             <div>
                 <div class="fw-bold fs-5 text-primary counter"
@@ -1182,6 +1193,86 @@ function potvrdiZavrsuvanje() {
 </div>
 
 
+<!-- Modal за историја на термини -->
+<div class="modal fade"
+     id="historyModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-xl">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Историја на термини -
+                    <span id="historyPatientName"></span>
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div id="historyLoading"
+                     class="text-center">
+                    Вчитување...
+                </div>
+
+                <div class="table-responsive">
+
+                    <table class="table table-bordered table-hover"
+                           id="historyTable"
+                           style="display:none;">
+
+                        <thead class="table-info">
+
+                            <tr>
+                                <th>Датум</th>
+                                <th>Време</th>
+                                <th>Доктор</th>
+                                <th>Статус</th>
+                                <th>Забелешка</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="historyTableBody">
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <div id="noHistory"
+                     class="alert alert-info"
+                     style="display:none;">
+                    Овој пациент нема претходни термини.
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Затвори
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
 @section Scripts {
     <script>
         flatpickr('#datumOd', {
@@ -1199,79 +1290,238 @@ function potvrdiZavrsuvanje() {
         });
 
 
-        document.querySelectorAll('.counter').forEach(counter => {
+        function startCounters() {
 
-            const target = Number(counter.getAttribute('data-target'));
-            let current = 0;
+            document.querySelectorAll('.counter').forEach(counter => {
 
-            const duration = 800;
-            const increment = target / (duration / 20);
+                const target = Number(counter.getAttribute('data-target'));
+                let current = 0;
 
-            const updateCounter = () => {
+                const duration = 800;
+                const increment = target / (duration / 20);
 
-                current += increment;
+                const updateCounter = () => {
 
-                if (current >= target) {
-                    counter.textContent = target;
-                    return;
+                    current += increment;
+
+                    if (current >= target) {
+                        counter.textContent = target;
+                        return;
+                    }
+
+                    counter.textContent = Math.floor(current);
+
+                    setTimeout(updateCounter, 20);
+                };
+
+                updateCounter();
+            });
+    }
+
+    document.getElementById("appointmentForm").addEventListener("submit", function (e) {
+
+        e.preventDefault();
+
+        const form = this;
+        const formData = new FormData(form);
+
+        fetch('/Appointments/Save', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+
+            if (data.success) {
+
+                // Затвори го modal-от
+                const modalElement = document.getElementById("addModal");
+                const modal = bootstrap.Modal.getInstance(modalElement);
+
+                if (modal) {
+                    modal.hide();
                 }
 
-                counter.textContent = Math.floor(current);
+                // Земи ги моменталните филтри од URL
+                const params = new URLSearchParams(window.location.search);
 
-                setTimeout(updateCounter, 20);
-            };
+                // Повторно земи ја Index страницата
+                fetch('/Appointments/Index?' + params.toString())
+                    .then(response => response.text())
+                    .then(html => {
 
-            updateCounter();
-        });
+                        const parser = new DOMParser();
+                        const page = parser.parseFromString(html, "text/html");
 
-        document.getElementById("appointmentForm").addEventListener("submit", function(e) {
+                        // =========================
+                        // UPDATE STATISTICS
+                        // =========================
 
-            e.preventDefault();
+                        const newStatistics =
+                            page.querySelector("#appointmentStatistics");
 
-            const form = this;
-            const formData = new FormData(form);
+                        if (newStatistics) {
 
-            fetch('/Appointments/Save', {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => response.json())
-                .then(data => {
+                            document.getElementById("appointmentStatistics").innerHTML =
+                                newStatistics.innerHTML;
 
-                    if (data.success) {
-
-                        // Затвори го modal-от
-                        const modalElement = document.getElementById("addModal");
-                        const modal = bootstrap.Modal.getInstance(modalElement);
-
-                        if (modal) {
-                            modal.hide();
+                            startCounters();
                         }
 
-                        // Земи ги моменталните филтри од URL
-                        const params = new URLSearchParams(window.location.search);
+                        // =========================
+                        // UPDATE TABLE
+                        // =========================
 
-                        // Повторно вчитај ја само табелата
-                        fetch('/Appointments/Index?' + params.toString())
-                            .then(response => response.text())
-                            .then(html => {
+                        const newTable =
+                            page.querySelector("#appointmentTable");
 
-                                const parser = new DOMParser();
-                                const page = parser.parseFromString(html, "text/html");
+                        if (newTable) {
 
-                                const novaTabela = page.querySelector("#appointmentTable");
+                            document.getElementById("appointmentTable").innerHTML =
+                                newTable.innerHTML;
+                        }
 
-                                if (novaTabela) {
-                                    document.getElementById("appointmentTable").innerHTML =
-                                        novaTabela.innerHTML;
-                                }
-                            });
-                    }
-                    else {
+                        // =========================
+                        // RESTART COUNTERS
+                        // =========================
 
-                        alert(data.message);
-                    }
-                });
+                        document.querySelectorAll(".counter").forEach(counter => {
+
+                            const target =
+                                parseInt(counter.getAttribute("data-target"));
+
+                            counter.textContent = target;
+                        });
+                    });
+            }
+            else {
+
+                const modalElement = document.getElementById("addModal");
+                const modal = bootstrap.Modal.getInstance(modalElement);
+
+                if (modal) {
+                    modal.hide();
+                }
+
+                const errorMessage =
+                    document.getElementById("errorMessage");
+
+                errorMessage.textContent = data.message;
+                errorMessage.style.display = "block";
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
         });
+    });
+
+    startCounters();
+
+function formatDate(date) {
+    if (!date) return "";
+
+    const d = new Date(date);
+
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+
+    return `${day}.${month}.${year}`;
+}
+
+function formatTime(time) {
+    if (!time) return "";
+
+    return time.substring(0, 5);
+}
+
+function prikaziIstorija(patientId, patientName) {
+
+    document.getElementById("historyPatientName").textContent =
+        patientName;
+
+    const tbody =
+        document.getElementById("historyTableBody");
+
+    tbody.innerHTML = "";
+
+    document.getElementById("historyLoading").style.display =
+        "block";
+
+    document.getElementById("historyTable").style.display =
+        "none";
+
+    document.getElementById("noHistory").style.display =
+        "none";
+
+    const modal = new bootstrap.Modal(
+        document.getElementById("historyModal")
+    );
+
+    modal.show();
+
+    fetch(`/Appointments/GetPatientHistory?patientId=${patientId}`)
+        .then(response => {
+
+            if (!response.ok) {
+                throw new Error("Грешка при вчитување на историјата.");
+            }
+
+            return response.json();
+        })
+        .then(termini => {
+
+            document.getElementById("historyLoading").style.display =
+                "none";
+
+            if (termini.length === 0) {
+
+                document.getElementById("noHistory").style.display =
+                    "block";
+
+                return;
+            }
+
+            termini.forEach(termin => {
+
+                const row = document.createElement("tr");
+
+                row.innerHTML = `
+                    <td>
+                        ${formatDate(termin.appointmentdate)}
+                    </td>
+
+                    <td>
+                        ${formatTime(termin.appointmenttime)}
+                    </td>
+
+                    <td>
+                        ${termin.doctor_first_name ?? ""}
+                        ${termin.doctor_last_name ?? ""}
+                    </td>
+
+                    <td>
+                        ${termin.status ?? ""}
+                    </td>
+
+                    <td>
+                        ${termin.notes ?? ""}
+                    </td>
+                `;
+
+                tbody.appendChild(row);
+            });
+
+            document.getElementById("historyTable").style.display =
+                "table";
+        })
+        .catch(error => {
+
+            console.error(error);
+
+            document.getElementById("historyLoading").textContent =
+                "Настана грешка при вчитување на историјата.";
+        });
+}
     </script>
 }

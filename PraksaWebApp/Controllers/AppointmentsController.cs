@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using PraksaWebApp.Models;
 using System.Net.Http.Json;
-
+using ClosedXML.Excel;
+using System.IO;
 namespace PraksaWebApp.Controllers
 {
     [Authorize]
@@ -494,6 +495,75 @@ namespace PraksaWebApp.Controllers
             );
 
             return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetPatientHistory(int patientId)
+        {
+            var termini = await _httpClient.GetFromJsonAsync<List<Appointments>>(
+                $"{_apiSettings.BaseUrl}Appointments"
+            ) ?? new List<Appointments>();
+
+            termini = termini
+                .Where(x => x.patientid == patientId)
+                .OrderByDescending(x => x.appointmentdate)
+                .ThenByDescending(x => TimeSpan.Parse(x.appointmenttime))
+                .ToList();
+
+            return Json(termini);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportExcel()
+        {
+            var termini = await _httpClient.GetFromJsonAsync<List<Appointments>>(
+                _apiSettings.BaseUrl + "Appointments"
+            ) ?? new List<Appointments>();
+
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("Термини");
+
+                worksheet.Cell(1, 1).Value = "Ид";
+                worksheet.Cell(1, 2).Value = "Доктор";
+                worksheet.Cell(1, 3).Value = "Пациент";
+                worksheet.Cell(1, 4).Value = "Датум";
+                worksheet.Cell(1, 5).Value = "Време";
+                worksheet.Cell(1, 6).Value = "Статус";
+                worksheet.Cell(1, 7).Value = "Забелешка";
+
+                int row = 2;
+
+                foreach (var termin in termini)
+                {
+                    worksheet.Cell(row, 1).Value = termin.id;
+                    worksheet.Cell(row, 2).Value =
+                        $"{termin.doctor_first_name} {termin.doctor_last_name}";
+                    worksheet.Cell(row, 3).Value =
+                        $"{termin.patient_first_name} {termin.patient_last_name}";
+                    worksheet.Cell(row, 4).Value =
+                        termin.appointmentdate.ToString("dd.MM.yyyy");
+                    worksheet.Cell(row, 5).Value =
+                    TimeSpan.Parse(termin.appointmenttime).ToString(@"hh\:mm");
+                    worksheet.Cell(row, 6).Value = termin.status;
+                    worksheet.Cell(row, 7).Value = termin.notes;
+
+                    row++;
+                }
+
+                worksheet.Columns().AdjustToContents();
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+
+                    return File(
+                        stream.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "Termini.xlsx"
+                    );
+                }
+            }
         }
     }
 }
