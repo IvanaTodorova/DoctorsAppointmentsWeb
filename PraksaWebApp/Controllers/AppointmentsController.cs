@@ -406,31 +406,33 @@ namespace PraksaWebApp.Controllers
 
             if (appointment.id == 0)
             {
-
                 appointment.created_by =
                     username;
-
                 await _httpClient.PostAsJsonAsync(
                     _apiSettings.BaseUrl + "Appointments",
-                    appointment
-                );
+                    appointment);
+
+                return Json(new
+                {
+                    success = true,
+                    message = "Успешно креиран термин!"
+                });
+
             }
             else
             {
-
                 appointment.modified_by =
                     username;
-
                 await _httpClient.PutAsJsonAsync(
                     $"{_apiSettings.BaseUrl}Appointments?id={appointment.id}",
-                    appointment
-                );
-            }
+                    appointment);
 
-            return Json(new
-            {
-                success = true
-            });
+                return Json(new
+                {
+                    success = true,
+                    message = "Успешно ажуриран термин!"
+                });
+            }
         }
 
         [HttpPut]

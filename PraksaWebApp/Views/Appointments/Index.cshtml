@@ -59,7 +59,7 @@
     }
 
     function editAppointment(id, doctorId, patientId, date, time, statusId, notes) {
-
+        
         document.querySelector('input[name="id"]').value = id;
 
         document.querySelector('[name="doctor_id"]').value = doctorId;
@@ -145,7 +145,6 @@ function promeniStatusVoZavrsen(id) {
 }
 
 function potvrdiZavrsuvanje() {
-
     const notes =
         document.getElementById("notesForCompletion").value;
 
@@ -162,11 +161,9 @@ function potvrdiZavrsuvanje() {
             if (!response.ok) {
                 throw new Error("Грешка при промена на статусот.");
             }
-
             return response;
         })
-        .then(() => {
-
+        .then((data) => {
             // Затвори го modal-от
             const modalElement =
                 document.getElementById("finishAppointmentModal");
@@ -177,6 +174,11 @@ function potvrdiZavrsuvanje() {
             if (modal) {
                 modal.hide();
             }
+                // const errorMessage =
+                //     document.getElementById("errorMessage");
+
+                // errorMessage.textContent = data.message;
+                // errorMessage.style.display = "block";
 
             // Земи ги моменталните филтри од URL
             const params =
@@ -186,7 +188,6 @@ function potvrdiZavrsuvanje() {
             fetch('/Appointments/Index?' + params.toString())
                 .then(response => response.text())
                 .then(html => {
-
                     const parser = new DOMParser();
                     const page =
                         parser.parseFromString(html, "text/html");
@@ -1392,6 +1393,13 @@ function potvrdiZavrsuvanje() {
 
                             counter.textContent = target;
                         });
+                        const errorMessage =
+                        document.getElementById("errorMessage");
+
+                        // errorMessage.textContent = data.message;
+                        // errorMessage.style.background-color = "green";
+                        errorMessage.style.display = "none";
+
                     });
             }
             else {
