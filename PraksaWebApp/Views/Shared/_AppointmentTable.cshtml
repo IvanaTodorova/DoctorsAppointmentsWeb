@@ -126,8 +126,12 @@
             <th>Креирано од</th>
             <th>Изменето на</th>
             <th>Изменето од</th>
-            <th>Промени статус</th>
-            <th>Историја</th>
+            @if (User.FindFirst("tip_korisnik")?.Value == "0" ||
+                User.FindFirst("tip_korisnik")?.Value == "1")
+            {
+                <th>Промени статус</th>
+                <th>Историја</th>
+            }
 
         </tr>
     </thead>
@@ -246,36 +250,40 @@
                     @(rez.modified_by)
                 </td>
 
-                <!-- ПРОМЕНИ СТАТУС -->
+            <!-- ПРОМЕНИ СТАТУС И ИСТОРИЈА -->
+            @if (User.FindFirst("tip_korisnik")?.Value == "0" ||
+                User.FindFirst("tip_korisnik")?.Value == "1")
+            {
                 <td>
                     @if (rez.status_id == 1)
                     {
                         <button type="button"
-                         class="btn btn-sm btn-start"
-                         onclick="promeniStatusVoTek(@rez.id)">
-                         Започни
+                                class="btn btn-sm btn-start"
+                                onclick="promeniStatusVoTek(@rez.id)">
+                            Започни
                         </button>
                     }
                     else if (rez.status_id == 2)
                     {
                         <button type="button"
-                        class="btn btn-sm btn-finish"
-                        onclick="promeniStatusVoZavrsen(@rez.id)">
-                        Заврши
+                                class="btn btn-sm btn-finish"
+                                onclick="promeniStatusVoZavrsen(@rez.id)">
+                            Заврши
                         </button>
                     }
-                   
                 </td>
-            <td>
-                <button type="button"
-                        class="btn btn-info btn-sm"
-                        style="white-space: nowrap;"
-                        onclick="prikaziIstorija(@rez.patientid, '@rez.patient_first_name @rez.patient_last_name')">
-                    Историја<br>на термини
-                </button>
-            </td>
 
-            </tr>
+                <td>
+                    <button type="button"
+                            class="btn btn-info btn-sm"
+                            style="white-space: nowrap;"
+                            onclick="prikaziIstorija(@rez.patientid, '@rez.patient_first_name @rez.patient_last_name')">
+                        Историја<br>на термини
+                    </button>
+                </td>
+                      }
+            
+        </tr>
         }
 
     </tbody>

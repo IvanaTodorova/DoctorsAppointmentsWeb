@@ -309,7 +309,7 @@ namespace PraksaWebApp.Controllers
         public async Task<IActionResult> Save(Appointments appointment)
         {
             var username =
-                HttpContext.Session.GetString("username");
+                 HttpContext.Session.GetString("username");
 
             Appointments? oldAppointment = null;
 
